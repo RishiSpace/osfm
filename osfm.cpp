@@ -21,7 +21,7 @@ int main()
         printf("0. Exit Program\n\n");
         printf("enter the feature you wanna use: ");
         scanf("%d",&i);
-        if (i == 3)
+        if (i == 1)
         {
             if (os == 1)
             {
