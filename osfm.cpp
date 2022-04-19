@@ -17,34 +17,11 @@ int main()
             os = 2;
         }
         #endif
-        printf("\n1. Simple and Compound Interest\n");
-        printf("2. Perimeter and Area of a Triangle\n");
-        printf("3.Install Programs\n");
+        printf("1.Install Programs\n");
         printf("0. Exit Program\n\n");
         printf("enter the feature you wanna use: ");
         scanf("%d",&i);
-        if (i == 1)
-        {
-            // Simple and Compound Interest
-            float p,y,r,si,ci;
-            printf("Enter the Principle value, Year and rate: ");
-            scanf("%f%f%f",&p,&y,&r);
-            si=(p*y*r)/100;
-            ci=p*pow(1+r/100,y)-p;
-            printf("\nSimple interest = %f and Compound Interest = %f\n",si,ci);
-        }
-        else if (i == 2)
-        {
-            // Area and Perimeter of Triangle
-            float t1,t2,t3,p,a,s;
-            printf("Enter the 3 sides of the triangle: ");
-            scanf("%f%f%f",&t1,&t2,&t3);
-            p=(t1+t2+t3);
-            s=p/2;
-            a=sqrt(s*(s-t1)*(s-t2)*(s-t3));
-            printf("\nThe Perimeter of the Triangle is: %f and the Area of the Triangle is: %f\n",p,a);
-        }
-        else if (i == 3)
+        if (i == 3)
         {
             if (os == 1)
             {
