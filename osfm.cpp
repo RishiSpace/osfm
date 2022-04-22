@@ -289,7 +289,7 @@ int main()
                 {
                     printf("sorry our program doesn't work without winget yet. Please install winget by updating App Installer or upgrade to Windows 11 if possible :)");
                 }
-                else if (w == 2)
+                else if (w == 2 || w == 3)
                 {
                     if (wp == 1)
                     {
