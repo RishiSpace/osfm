@@ -364,6 +364,10 @@ int main()
                         printf("oops wrong choice");
                     }
                 }
+                else
+                {
+                    printf("Oops sorry, wrong choice");
+                }
             }
             else
             {
