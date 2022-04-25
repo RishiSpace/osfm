@@ -17,7 +17,7 @@ int main()
             os = 2;
         }
         #endif
-        printf("1.Install Programs\n");
+        printf("\n1.Install Programs\n");
         printf("0. Exit Program\n\n");
         printf("enter the feature you wanna use: ");
         scanf("%d",&i);
@@ -26,12 +26,13 @@ int main()
             if (os == 1)
             {
                 char l,lp;
-                printf("We've detected that you are using Linux, could you please specify which Distribution of Linux you are using ?\n");
+                printf("We've detected that you are using Linux, could you please specify which Distribution of Linux you are using ?\n\n");
                 printf("1. Debian (Ubuntu, PopOs, Mint, ZorinOS)\n");
                 printf("2. Arch Linux (Manjaro, Garuda)\n");
-                printf("3. Fedora\n");
+                printf("3. Fedora\n\n");
+                printf("Enter your choice (Number only): ");
                 scanf("%d",&l);
-                printf("Which program do you wanna install ? \n");
+                printf("\nWhich program do you wanna install ? \n\n");
                 printf("1. Firefox\n");
                 printf("2. Neofetch\n");
                 printf("3. terminator\n");
@@ -40,7 +41,10 @@ int main()
                 printf("6. vscode\n");
                 printf("7. Steam\n");
                 printf("8. Lutris\n");
-                printf("0. All of the above\n");
+                printf("9. Brave\n");
+                printf("10. VLC Media Player\n");
+                printf("0. All of the above\n\n");
+                printf("Enter your choice (Number only): ");
                 scanf ("%d",&lp);
                 if (l == 1)
                 {
@@ -96,6 +100,22 @@ int main()
                         printf("Installing Lutris, please enter your passowrd if prompted\n");
                         system ("sudo apt install lutris");
                     }
+                    else if (lp == 9)
+                    {
+                        //brave
+                        printf("Installing Brave browser, please enter your passowrd if prompted\n");
+                        system ("sudo apt install apt-transport-https curl");
+                        system ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
+                        system ("'echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main'|sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
+                        system ("sudo apt update");
+                        system ("sudo apt install brave-browser");
+                    }
+                    else if (lp == 10)
+                    {
+                        //VLC Media player
+                        printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
+                        system ("sudo apt install vlc");
+                    }
                     else if (lp == 0)
                     {
                         //All of the above
@@ -112,6 +132,12 @@ int main()
                         system ("sudo apt install apt-transport-https && sudo apt update && sudo apt install code");
                         system ("sudo apt install steam");
                         system ("sudo apt install lutris");
+                        system ("sudo apt install apt-transport-https curl");
+                        system ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
+                        system ("'echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main'|sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
+                        system ("sudo apt update");
+                        system ("sudo apt install brave-browser");
+                        system ("sudo apt install vlc");
                     }
                     else
                     {
@@ -171,6 +197,18 @@ int main()
                         printf("Installing Lutris, please enter your passowrd if prompted\n");
                         system ("yay -S lutris");
                     }
+                    else if (lp == 9)
+                    {
+                        //brave
+                        printf("Installing Brave browser, please enter your passowrd if prompted\n");
+                        system ("yay -S brave");
+                    }
+                    else if (lp == 10)
+                    {
+                        //VLC Media player
+                        printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
+                        system ("sudo pacman -S vlc");
+                    }
                     else if (lp == 0)
                     {
                         //All of the above
@@ -183,6 +221,8 @@ int main()
                         system ("yay -S vscode");
                         system ("yay -S steam");
                         system ("yay -S lutris");
+                        system ("yay -S brave");
+                        system ("sudo pacman -S vlc");
                     }
                     else
                     {
@@ -242,6 +282,18 @@ int main()
                         printf("Installing Lutris, please enter your passowrd if prompted\n");
                         system ("sudo dnf install lutris");
                     }
+                    else if (lp == 9)
+                    {
+                        //brave
+                        printf("Installing Brave browser, please enter your passowrd if prompted\n");
+                        system ("flatpak install com.brave.Browser");
+                    }
+                    else if (lp == 10)
+                    {
+                        //VLC Media player
+                        printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
+                        system ("sudo dnf install vlc");
+                    }
                     else if (lp == 0)
                     {
                         //All of the above
@@ -254,6 +306,8 @@ int main()
                         system ("flatpak install com.visualstudio.code");
                         system ("sudo dnf install steam");
                         system ("sudo dnf install lutris");
+                        system ("flatpak install com.brave.Browser");
+                        system ("sudo dnf install vlc");
                     }
                     else
                     {
@@ -267,11 +321,13 @@ int main()
             }
             if (os == 2)
             {
+                system ("color 3");
                 int w,wp;
-                printf ("We've detected that you're using Windows. Could you please specify the version of windows that you are using ? \n");
+                printf ("We've detected that you're using Windows. Could you please specify the version of windows that you are using ? \n\n");
                 printf ("1. windows 10\n");
                 printf ("2. Windows 10 with Winget\n");
                 printf ("3. Windows 11\n");
+                printf ("\nTip: if you don't know if you have winget installed or not, launch a cmd instance and type 'winget --help'. If you see errors, then winget is not installed.\n");
                 scanf("%d",&w);
                 printf("Which program do you wanna install ? \n");
                 printf("1. Firefox\n");
@@ -283,6 +339,9 @@ int main()
                 printf("7. steam\n");
                 printf("8. Epic Games Launcher\n");
                 printf("9. OBS Studio\n");
+                printf("10. Brave\n");
+                printf("11. VLC Media Player\n");
+                printf("12. Adobe Acrobat Reader\n");
                 printf("0. All of the above\n");
                 scanf("%d",&wp);
                 if (w == 1)
@@ -295,69 +354,90 @@ int main()
                     {
                         //Firefox
                         printf("Installing Firefox, please enter your password if prompted\n");
-                        system ("winget install Mozilla.Firefox -e");
+                        system ("start cmd.exe winget install Mozilla.Firefox -e");
                     }
                     else if (wp == 2)
                     {
                         //notepad++
                         printf("Installing Notepad++, please enter your password if prompted\n");
-                        system ("winget install Notepad++.Notepad++ -e");
+                        system ("start cmd.exe winget install Notepad++.Notepad++ -e");
                     }
                     else if (wp == 3)
                     {
                         //vscode
                         printf("Installing vscode, please enter your password if prompted\n");
-                        system ("winget install Microsoft.VisualStudioCode -e");
+                        system ("start cmd.exe winget install Microsoft.VisualStudioCode -e");
                     }
                     else if (wp == 4)
                     {
                         //spotify
                         printf("Installing spotify, please enter your password if prompted\n");
-                        system ("winget install Spotify.Spotify -e");
+                        system ("start cmd.exe winget install Spotify.Spotify -e");
                     }
                     else if (wp == 5)
                     {
                         //chrome
                         printf("Installing chrome, please enter your password if prompted\n");
-                        system ("winget install Google.Chrome -e");
+                        system ("start cmd.exe winget install Google.Chrome -e");
                     }
                     else if (wp == 6)
                     {
                         //discord
                         printf("Installing Discord, please enter your password if prompted\n");
-                        system ("winget install Discord.Discord -e");
+                        system ("start cmd.exe winget install Discord.Discord -e");
                     }
                     else if (wp == 7)
                     {
                         //steam
                         printf("Installing Steam, please enter your password if prompted\n");
-                        system ("winget install Valve.Steam -e");
+                        system ("start cmd.exe winget install Valve.Steam -e");
                     }
                     else if (wp == 8)
                     {
                         //Epic games Launcher
                         printf("Installing Epic games Launcher, please enter your password if prompted\n");
-                        system ("winget install EpicGames.EpicGamesLauncher -e");
+                        system ("start cmd.exe winget install EpicGames.EpicGamesLauncher -e");
                     }
                     else if (wp == 9)
                     {
                         //OBS Studio
                         printf("Installing OBS Studio, please enter your password if prompted\n");
-                        system ("winget install OBSProject.OBSStudio -e");
+                        system ("start cmd.exe winget install OBSProject.OBSStudio -e");
+                    }
+                    else if (wp == 10)
+                    {
+                        //Brave Browser
+                        printf("Installing Brave browser, please enter your password if prompted\n");
+                        system ("start cmd.exe winget install BraveSoftware.BraveBrowser -e");
+                    }
+                    else if (wp == 11)
+                    {
+                        //VLC Media Player
+                        printf("Installing VLC Media Player, please enter your password if prompted\n");
+                        system ("start cmd.exe winget install VideoLAN.VLC -e");
+                    }
+                    else if (wp == 12)
+                    {
+                        //Adobe Acrobat Reader
+                        printf("Installing Adobe Acrobat Reader DC, please enter your password if prompted\n");
+                        system ("start cmd.exe winget install Adobe.Acrobat.Reader.64-bit -e");
                     }
                     else if (wp == 0)
                     {
                         //All of the above
                         printf("Installing All of the above programs (this may take some time), please enter your password if prompted\n");
-                        system ("winget install Mozilla.Firefox -e");
-                        system ("winget install Notepad++.Notepad++ -e");
-                        system ("winget install Microsoft.VisualStudioCode -e");
-                        system ("winget install Spotify.Spotify -e");
-                        system ("winget install Google.Chrome -e");
-                        system ("winget install Discord.Discord -e");
-                        system ("winget install Valve.Steam -e");
-                        system ("winget install EpicGames.EpicGamesLauncher -e");
-                        system ("winget install OBSProject.OBSStudio -e");
+                        system ("start cmd.exe winget install Mozilla.Firefox -e");
+                        system ("start cmd.exe winget install Notepad++.Notepad++ -e");
+                        system ("start cmd.exe winget install Microsoft.VisualStudioCode -e");
+                        system ("start cmd.exe winget install Spotify.Spotify -e");
+                        system ("start cmd.exe winget install Google.Chrome -e");
+                        system ("start cmd.exe winget install Discord.Discord -e");
+                        system ("start cmd.exe winget install Valve.Steam -e");
+                        system ("start cmd.exe winget install EpicGames.EpicGamesLauncher -e");
+                        system ("start cmd.exe winget install OBSProject.OBSStudio -e");
+                        system ("start cmd.exe winget install BraveSoftware.BraveBrowser -e");
+                        system ("start cmd.exe winget install VideoLAN.VLC -e");
+                        system ("start cmd.exe winget install Adobe.Acrobat.Reader.64-bit -e");
                     }
                     else
                     {
