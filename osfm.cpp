@@ -354,90 +354,90 @@ int main()
                     {
                         //Firefox
                         printf("Installing Firefox, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Mozilla.Firefox -e");
+                        system ("start powershell.exe winget install Mozilla.Firefox -e");
                     }
                     else if (wp == 2)
                     {
                         //notepad++
                         printf("Installing Notepad++, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Notepad++.Notepad++ -e");
+                        system ("start powershell.exe winget install Notepad++.Notepad++ -e");
                     }
                     else if (wp == 3)
                     {
                         //vscode
                         printf("Installing vscode, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Microsoft.VisualStudioCode -e");
+                        system ("start powershell.exe winget install Microsoft.VisualStudioCode -e");
                     }
                     else if (wp == 4)
                     {
                         //spotify
                         printf("Installing spotify, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Spotify.Spotify -e");
+                        system ("start powershell.exe winget install Spotify.Spotify -e");
                     }
                     else if (wp == 5)
                     {
                         //chrome
                         printf("Installing chrome, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Google.Chrome -e");
+                        system ("start powershell.exe winget install Google.Chrome -e");
                     }
                     else if (wp == 6)
                     {
                         //discord
                         printf("Installing Discord, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Discord.Discord -e");
+                        system ("start powershell.exe winget install Discord.Discord -e");
                     }
                     else if (wp == 7)
                     {
                         //steam
                         printf("Installing Steam, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Valve.Steam -e");
+                        system ("start powershell.exe winget install Valve.Steam -e");
                     }
                     else if (wp == 8)
                     {
                         //Epic games Launcher
                         printf("Installing Epic games Launcher, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install EpicGames.EpicGamesLauncher -e");
+                        system ("start powershell.exe winget install EpicGames.EpicGamesLauncher -e");
                     }
                     else if (wp == 9)
                     {
                         //OBS Studio
                         printf("Installing OBS Studio, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install OBSProject.OBSStudio -e");
+                        system ("start powershell.exe winget install OBSProject.OBSStudio -e");
                     }
                     else if (wp == 10)
                     {
                         //Brave Browser
                         printf("Installing Brave browser, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install BraveSoftware.BraveBrowser -e");
+                        system ("start powershell.exe winget install BraveSoftware.BraveBrowser -e");
                     }
                     else if (wp == 11)
                     {
                         //VLC Media Player
                         printf("Installing VLC Media Player, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install VideoLAN.VLC -e");
+                        system ("start powershell.exe winget install VideoLAN.VLC -e");
                     }
                     else if (wp == 12)
                     {
                         //Adobe Acrobat Reader
                         printf("Installing Adobe Acrobat Reader DC, please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Adobe.Acrobat.Reader.64-bit -e");
+                        system ("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
                     }
                     else if (wp == 0)
                     {
                         //All of the above
                         printf("Installing All of the above programs (this may take some time), please enter your password if prompted\n");
-                        system ("start cmd.exe winget install Mozilla.Firefox -e");
-                        system ("start cmd.exe winget install Notepad++.Notepad++ -e");
-                        system ("start cmd.exe winget install Microsoft.VisualStudioCode -e");
-                        system ("start cmd.exe winget install Spotify.Spotify -e");
-                        system ("start cmd.exe winget install Google.Chrome -e");
-                        system ("start cmd.exe winget install Discord.Discord -e");
-                        system ("start cmd.exe winget install Valve.Steam -e");
-                        system ("start cmd.exe winget install EpicGames.EpicGamesLauncher -e");
-                        system ("start cmd.exe winget install OBSProject.OBSStudio -e");
-                        system ("start cmd.exe winget install BraveSoftware.BraveBrowser -e");
-                        system ("start cmd.exe winget install VideoLAN.VLC -e");
-                        system ("start cmd.exe winget install Adobe.Acrobat.Reader.64-bit -e");
+                        system ("start powershell.exe winget install Mozilla.Firefox -e");
+                        system ("start powershell.exe winget install Notepad++.Notepad++ -e");
+                        system ("start powershell.exe winget install Microsoft.VisualStudioCode -e");
+                        system ("start powershell.exe winget install Spotify.Spotify -e");
+                        system ("start powershell.exe winget install Google.Chrome -e");
+                        system ("start powershell.exe winget install Discord.Discord -e");
+                        system ("start powershell.exe winget install Valve.Steam -e");
+                        system ("start powershell.exe winget install EpicGames.EpicGamesLauncher -e");
+                        system ("start powershell.exe winget install OBSProject.OBSStudio -e");
+                        system ("start powershell.exe winget install BraveSoftware.BraveBrowser -e");
+                        system ("start powershell.exe winget install VideoLAN.VLC -e");
+                        system ("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
                     }
                     else
                     {
