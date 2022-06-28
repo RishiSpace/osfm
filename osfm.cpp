@@ -1,6 +1,7 @@
 #include<iostream>
 #include<stdio.h>
 #include<math.h>
+#include<string.h>
 using namespace std;
 int Linux()
 {
@@ -22,6 +23,7 @@ int Linux()
     printf("8. Lutris\n");
     printf("9. Brave\n");
     printf("10. VLC Media Player\n");
+    printf("11. Custom (Enter name of the program)\n");
     printf("0. All of the above\n\n");
     printf("Enter your choice (Number only): ");
     scanf ("%d",&lp);
@@ -118,6 +120,16 @@ int Linux()
             system ("sudo apt install brave-browser");
             system ("sudo apt install vlc");
         }
+        else if (lp == 11)
+        {
+            char s[20],p[20];
+            strcat(s,"sudo apt install");
+            strcat(s," ");
+            printf("Enter the name of the program you want to install: ");
+            scanf("%s",p);
+            strcat(s,p);
+            system (s);
+        }
         else
         {
             printf("sorry wrong input");
@@ -126,7 +138,7 @@ int Linux()
     else if (l == 2)
     {
         //prerequisites
-        printf("Hang on, we're making sure you can install the programs, please enter your password if prompted");
+        printf("Hang on, we're making sure you can install the programs, please enter your password if prompted\n");
         system ("sudo pacman -S yay");
         if (lp == 1)
         {
@@ -188,6 +200,16 @@ int Linux()
             printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
             system ("sudo pacman -S vlc");
         }
+        else if (lp == 11)
+        {
+            char s[20],p[20];
+            strcat(s,"sudo pacman -S");
+            strcat(s," ");
+            printf("Enter the name of the program you want to install: ");
+            scanf("%s",p);
+            strcat(s,p);
+            system (s);
+        }
         else if (lp == 0)
         {
             //All of the above
@@ -211,7 +233,7 @@ int Linux()
     else if (l == 3)
     {
         //prerequisites
-        printf ("Please wait while we check if we can install programs on this system. Enter your password if prompted");
+        printf ("Please wait while we check if we can install programs on this system. Enter your password if prompted\n");
         system ("sudo dnf install flatpak");
         if (lp == 1)
         {
@@ -273,6 +295,16 @@ int Linux()
             printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
             system ("sudo dnf install vlc");
         }
+        else if (lp == 11)
+        {
+            char s[20],p[20];
+            strcat(s,"sudo dnf install");
+            strcat(s," ");
+            printf("Enter the name of the program you want to install: ");
+            scanf("%s",p);
+            strcat(s,p);
+            system (s);
+        }
         else if (lp == 0)
         {
             //All of the above
@@ -322,6 +354,7 @@ int Windows()
         printf("10. Brave\n");
         printf("11. VLC Media Player\n");
         printf("12. Adobe Acrobat Reader\n");
+        printf("13. Something Else (Custom)\n");
         printf("0. All of the above\n");
         scanf("%d",&wp);
         if (w == 1)
@@ -402,6 +435,16 @@ int Windows()
                 printf("Installing Adobe Acrobat Reader DC, please enter your password if prompted\n");
                 system ("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
             }
+            else if (wp == 13)
+            {
+                char s[50],p[50];
+                strcat(s,"start powershell.exe winget install");
+                strcat(s," ");
+                printf("Enter the name of the program you want to install: ");
+                scanf("%s",p);
+                strcat(s,p);
+                system (s);
+            }
             else if (wp == 0)
             {
                 //All of the above
@@ -430,11 +473,43 @@ int Windows()
         }
     return 0;
 }
+int updatel()
+{
+    int l;
+    printf("We've detected that you are using Linux, could you please specify which Distribution of Linux you are using ?\n\n");
+    printf("1. Debian (Ubuntu, PopOs, Mint, ZorinOS)\n");
+    printf("2. Arch Linux (Manjaro, Garuda)\n");
+    printf("3. Fedora\n\n");
+    scanf ("%d",&l);
+    if (l == 1)
+    {
+        printf("Updating your system, You may be prompted to type in your password");
+        system("sudo apt-get update && sudo apt upgrade -yy");
+    }
+    if (l == 2)
+    {
+        printf("Updating your system, You may be prompted to type in your password");
+        system("yay -Syu");
+    }
+    if (l == 3)
+    {
+        printf("Updating your system, You may be prompted to type in your password");
+        system("sudo dnf update -yy");
+    }
+    return 0;
+}
+int updatew()
+{
+    printf("Updating your system, You may be prompted to type in your password");
+    system("winget upgrade --all");
+    return 0;
+}
 int main()
 {
     printf ("Hello welcome to osfm, a program made by Rishi Space\n");
     while (true)
     {
+        //Determine the OS
         int i,os;
         #ifdef linux
         {
@@ -446,11 +521,13 @@ int main()
         }
         #endif
         printf("\n1.Install Programs\n");
+        printf("2. Update all Apps\n");
         printf("0. Exit Program\n\n");
         printf("enter the feature you wanna use: ");
         scanf("%d",&i);
-        if (i == 1)
+        if (i == 1) 
         {
+            //Install Apps
             if (os == 1)
             {
                 Linux();
@@ -458,6 +535,18 @@ int main()
             if (os == 2)
             {
                 Windows();
+            }
+        }
+        else if (i == 2)
+        {
+            //Update Apps
+            if (os == 1)
+            {
+                updatel();
+            }
+            if (os == 2)
+            {
+                updatew();
             }
         }
         else if (i == 0)
