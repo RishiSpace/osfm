@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Install.h"
 namespace osfmgf {
 
 	using namespace System;
@@ -62,8 +62,8 @@ namespace osfmgf {
 			this->button3 = (gcnew System::Windows::Forms::Button());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
-			this->panel2 = (gcnew System::Windows::Forms::Panel());
 			this->button4 = (gcnew System::Windows::Forms::Button());
+			this->panel2 = (gcnew System::Windows::Forms::Panel());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->panel1->SuspendLayout();
 			this->panel2->SuspendLayout();
@@ -71,7 +71,7 @@ namespace osfmgf {
 			// 
 			// button1
 			// 
-			this->button1->BackColor = System::Drawing::Color::Teal;
+			this->button1->BackColor = System::Drawing::Color::Indigo;
 			this->button1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button1->ForeColor = System::Drawing::Color::MediumPurple;
@@ -81,10 +81,11 @@ namespace osfmgf {
 			this->button1->TabIndex = 0;
 			this->button1->Text = L"Install Apps";
 			this->button1->UseVisualStyleBackColor = false;
+			this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
 			// 
 			// button2
 			// 
-			this->button2->BackColor = System::Drawing::Color::Teal;
+			this->button2->BackColor = System::Drawing::Color::Indigo;
 			this->button2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button2->ForeColor = System::Drawing::Color::MediumPurple;
@@ -97,7 +98,7 @@ namespace osfmgf {
 			// 
 			// button3
 			// 
-			this->button3->BackColor = System::Drawing::Color::Teal;
+			this->button3->BackColor = System::Drawing::Color::Indigo;
 			this->button3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button3->ForeColor = System::Drawing::Color::MediumPurple;
@@ -120,7 +121,7 @@ namespace osfmgf {
 			// 
 			// panel1
 			// 
-			this->panel1->BackColor = System::Drawing::Color::Teal;
+			this->panel1->BackColor = System::Drawing::Color::Black;
 			this->panel1->Controls->Add(this->button4);
 			this->panel1->Controls->Add(this->button3);
 			this->panel1->Controls->Add(this->button2);
@@ -130,18 +131,9 @@ namespace osfmgf {
 			this->panel1->Size = System::Drawing::Size(284, 489);
 			this->panel1->TabIndex = 4;
 			// 
-			// panel2
-			// 
-			this->panel2->BackColor = System::Drawing::Color::White;
-			this->panel2->Controls->Add(this->pictureBox1);
-			this->panel2->Location = System::Drawing::Point(1, 0);
-			this->panel2->Name = L"panel2";
-			this->panel2->Size = System::Drawing::Size(285, 117);
-			this->panel2->TabIndex = 5;
-			// 
 			// button4
 			// 
-			this->button4->BackColor = System::Drawing::Color::Teal;
+			this->button4->BackColor = System::Drawing::Color::Indigo;
 			this->button4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button4->ForeColor = System::Drawing::Color::MediumPurple;
@@ -153,15 +145,27 @@ namespace osfmgf {
 			this->button4->UseVisualStyleBackColor = false;
 			this->button4->Click += gcnew System::EventHandler(this, &MyForm::button4_Click);
 			// 
+			// panel2
+			// 
+			this->panel2->BackColor = System::Drawing::Color::Black;
+			this->panel2->Controls->Add(this->pictureBox1);
+			this->panel2->Location = System::Drawing::Point(1, 0);
+			this->panel2->Name = L"panel2";
+			this->panel2->Size = System::Drawing::Size(285, 117);
+			this->panel2->TabIndex = 5;
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->BackColor = System::Drawing::SystemColors::ActiveCaptionText;
 			this->ClientSize = System::Drawing::Size(284, 561);
 			this->Controls->Add(this->panel2);
 			this->Controls->Add(this->panel1);
+			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
+			this->MaximizeBox = false;
 			this->Name = L"MyForm";
-			this->Text = L"MyForm";
+			this->Text = L"OSFM";
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
 			this->panel1->ResumeLayout(false);
@@ -174,5 +178,9 @@ namespace osfmgf {
 	}
 	private: System::Void button4_Click(System::Object^ sender, System::EventArgs^ e) {
 	}
+private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+	Install ^ form = gcnew Install;
+	form->ShowDialog();
+}
 };
 }
