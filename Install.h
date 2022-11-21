@@ -136,10 +136,10 @@ namespace osfmgf {
 			// 
 			// button13
 			// 
-			this->button13->BackColor = System::Drawing::Color::Indigo;
+			this->button13->BackColor = System::Drawing::Color::Black;
 			this->button13->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button13->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button13->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button13->Location = System::Drawing::Point(726, 467);
 			this->button13->Name = L"button13";
 			this->button13->Size = System::Drawing::Size(178, 76);
@@ -150,10 +150,10 @@ namespace osfmgf {
 			// 
 			// button12
 			// 
-			this->button12->BackColor = System::Drawing::Color::Indigo;
+			this->button12->BackColor = System::Drawing::Color::Black;
 			this->button12->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button12->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button12->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button12->Location = System::Drawing::Point(726, 373);
 			this->button12->Name = L"button12";
 			this->button12->Size = System::Drawing::Size(178, 76);
@@ -164,10 +164,10 @@ namespace osfmgf {
 			// 
 			// button11
 			// 
-			this->button11->BackColor = System::Drawing::Color::Indigo;
+			this->button11->BackColor = System::Drawing::Color::Black;
 			this->button11->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button11->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button11->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button11->Location = System::Drawing::Point(726, 271);
 			this->button11->Name = L"button11";
 			this->button11->Size = System::Drawing::Size(178, 76);
@@ -178,10 +178,10 @@ namespace osfmgf {
 			// 
 			// button10
 			// 
-			this->button10->BackColor = System::Drawing::Color::Indigo;
+			this->button10->BackColor = System::Drawing::Color::Black;
 			this->button10->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button10->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button10->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button10->Location = System::Drawing::Point(726, 168);
 			this->button10->Name = L"button10";
 			this->button10->Size = System::Drawing::Size(178, 76);
@@ -192,10 +192,10 @@ namespace osfmgf {
 			// 
 			// button9
 			// 
-			this->button9->BackColor = System::Drawing::Color::Indigo;
+			this->button9->BackColor = System::Drawing::Color::Black;
 			this->button9->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button9->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button9->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button9->Location = System::Drawing::Point(522, 467);
 			this->button9->Name = L"button9";
 			this->button9->Size = System::Drawing::Size(178, 76);
@@ -206,10 +206,10 @@ namespace osfmgf {
 			// 
 			// button8
 			// 
-			this->button8->BackColor = System::Drawing::Color::Indigo;
+			this->button8->BackColor = System::Drawing::Color::Black;
 			this->button8->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button8->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button8->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button8->Location = System::Drawing::Point(522, 373);
 			this->button8->Name = L"button8";
 			this->button8->Size = System::Drawing::Size(178, 76);
@@ -220,10 +220,10 @@ namespace osfmgf {
 			// 
 			// button7
 			// 
-			this->button7->BackColor = System::Drawing::Color::Indigo;
+			this->button7->BackColor = System::Drawing::Color::Black;
 			this->button7->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button7->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button7->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button7->Location = System::Drawing::Point(522, 271);
 			this->button7->Name = L"button7";
 			this->button7->Size = System::Drawing::Size(178, 76);
@@ -234,10 +234,10 @@ namespace osfmgf {
 			// 
 			// button6
 			// 
-			this->button6->BackColor = System::Drawing::Color::Indigo;
+			this->button6->BackColor = System::Drawing::Color::Black;
 			this->button6->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button6->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button6->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button6->Location = System::Drawing::Point(522, 168);
 			this->button6->Name = L"button6";
 			this->button6->Size = System::Drawing::Size(178, 76);
@@ -248,10 +248,10 @@ namespace osfmgf {
 			// 
 			// button5
 			// 
-			this->button5->BackColor = System::Drawing::Color::Indigo;
+			this->button5->BackColor = System::Drawing::Color::Black;
 			this->button5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button5->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button5->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button5->Location = System::Drawing::Point(318, 467);
 			this->button5->Name = L"button5";
 			this->button5->Size = System::Drawing::Size(178, 76);
@@ -264,8 +264,7 @@ namespace osfmgf {
 			// 
 			this->panel2->AccessibleName = L"";
 			this->panel2->AutoSize = true;
-			this->panel2->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(128)), static_cast<System::Int32>(static_cast<System::Byte>(255)),
-				static_cast<System::Int32>(static_cast<System::Byte>(128)));
+			this->panel2->BackColor = System::Drawing::Color::Indigo;
 			this->panel2->Controls->Add(this->label1);
 			this->panel2->Location = System::Drawing::Point(259, 0);
 			this->panel2->Name = L"panel2";
@@ -285,13 +284,14 @@ namespace osfmgf {
 			this->label1->TabIndex = 0;
 			this->label1->Text = L"Install Apps";
 			this->label1->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
+			this->label1->Click += gcnew System::EventHandler(this, &Install::label1_Click);
 			// 
 			// button4
 			// 
-			this->button4->BackColor = System::Drawing::Color::Indigo;
+			this->button4->BackColor = System::Drawing::Color::Black;
 			this->button4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button4->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button4->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button4->Location = System::Drawing::Point(318, 373);
 			this->button4->Name = L"button4";
 			this->button4->Size = System::Drawing::Size(178, 76);
@@ -315,10 +315,10 @@ namespace osfmgf {
 			// 
 			// button1
 			// 
-			this->button1->BackColor = System::Drawing::Color::Indigo;
+			this->button1->BackColor = System::Drawing::Color::Black;
 			this->button1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button1->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button1->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button1->Location = System::Drawing::Point(318, 271);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(178, 76);
@@ -329,10 +329,10 @@ namespace osfmgf {
 			// 
 			// button2
 			// 
-			this->button2->BackColor = System::Drawing::Color::Indigo;
+			this->button2->BackColor = System::Drawing::Color::Black;
 			this->button2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->button2->ForeColor = System::Drawing::SystemColors::ActiveCaption;
+			this->button2->ForeColor = System::Drawing::Color::MediumPurple;
 			this->button2->Location = System::Drawing::Point(318, 168);
 			this->button2->Name = L"button2";
 			this->button2->Size = System::Drawing::Size(178, 76);
@@ -413,6 +413,8 @@ private: System::Void button12_Click(System::Object^ sender, System::EventArgs^ 
 }
 private: System::Void button13_Click(System::Object^ sender, System::EventArgs^ e) {
 		system("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
+}
+private: System::Void label1_Click(System::Object^ sender, System::EventArgs^ e) {
 }
 };
 }

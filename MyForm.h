@@ -1,5 +1,6 @@
 #pragma once
 #include "Install.h"
+#include "utilities.h"
 namespace osfmgf {
 
 	using namespace System;
@@ -71,7 +72,7 @@ namespace osfmgf {
 			// 
 			// button1
 			// 
-			this->button1->BackColor = System::Drawing::Color::Indigo;
+			this->button1->BackColor = System::Drawing::Color::Black;
 			this->button1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button1->ForeColor = System::Drawing::Color::MediumPurple;
@@ -85,7 +86,7 @@ namespace osfmgf {
 			// 
 			// button2
 			// 
-			this->button2->BackColor = System::Drawing::Color::Indigo;
+			this->button2->BackColor = System::Drawing::Color::Black;
 			this->button2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button2->ForeColor = System::Drawing::Color::MediumPurple;
@@ -98,7 +99,7 @@ namespace osfmgf {
 			// 
 			// button3
 			// 
-			this->button3->BackColor = System::Drawing::Color::Indigo;
+			this->button3->BackColor = System::Drawing::Color::Black;
 			this->button3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button3->ForeColor = System::Drawing::Color::MediumPurple;
@@ -108,6 +109,7 @@ namespace osfmgf {
 			this->button3->TabIndex = 2;
 			this->button3->Text = L"Update All Apps";
 			this->button3->UseVisualStyleBackColor = false;
+			this->button3->Click += gcnew System::EventHandler(this, &MyForm::button3_Click);
 			// 
 			// pictureBox1
 			// 
@@ -133,7 +135,7 @@ namespace osfmgf {
 			// 
 			// button4
 			// 
-			this->button4->BackColor = System::Drawing::Color::Indigo;
+			this->button4->BackColor = System::Drawing::Color::Black;
 			this->button4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->button4->ForeColor = System::Drawing::Color::MediumPurple;
@@ -177,10 +179,15 @@ namespace osfmgf {
 	private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	}
 	private: System::Void button4_Click(System::Object^ sender, System::EventArgs^ e) {
+		utilities ^ form = gcnew utilities;
+		form->ShowDialog();
 	}
 private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
 	Install ^ form = gcnew Install;
 	form->ShowDialog();
+}
+private: System::Void button3_Click(System::Object^ sender, System::EventArgs^ e) {
+	system("start powershell.exe winget upgrade --all");
 }
 };
 }
