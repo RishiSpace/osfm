@@ -6,6 +6,19 @@ from tkinter import scrolledtext, END
 ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
 
 class ServerApp:
+    @staticmethod
+    def get_private_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            IP = s.getsockname()[0]
+        except Exception:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+    
     def __init__(self, root):
         self.clients = {}
         self.root = root
@@ -44,12 +57,12 @@ class ServerApp:
 
     def start_server(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = socket.gethostname()
+        host = self.get_private_ip()
         port = 12345
         self.server_socket.bind((host, port))
         self.server_socket.listen()
 
-        print("Server started. Waiting for connections...")
+        print(f"Server started on {host}. Waiting for connections...")
 
         threading.Thread(target=self.accept_connections, daemon=True).start()
 
