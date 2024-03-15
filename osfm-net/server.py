@@ -1,7 +1,8 @@
 import socket
 import threading
 import customtkinter as ctk
-from tkinter import scrolledtext, END
+from tkinter import scrolledtext, END, filedialog
+import os
 
 ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
 
@@ -48,6 +49,10 @@ class ServerApp:
         # ScrolledText for displaying connected PCs
         self.connected_pcs_text = scrolledtext.ScrolledText(root, height=10, background='black', foreground='white')
         self.connected_pcs_text.pack(pady=10)
+
+        # Button for selecting files or folders to send
+        self.file_transfer_button = ctk.CTkButton(root, text="Transfer Files", command=self.select_files)
+        self.file_transfer_button.pack(pady=10)
 
         # Start server
         self.start_server()
@@ -106,6 +111,44 @@ class ServerApp:
 
     def fix_windows(self):
         self.send_command_to_clients("fix")
+
+    def select_files(self):
+        file_paths = filedialog.askopenfilenames(title="Select files")
+        folder_paths = filedialog.askdirectory(title="Select folders")  # This allows only one folder to be selected at a time
+        self.transfer_files_to_clients(file_paths, folder_paths)
+
+    def transfer_files_to_clients(self, file_paths, folder_paths):
+        for client in self.clients.values():
+            # First, send a signal to prepare the client for file transfer
+            client.send("FILE_TRANSFER_INIT".encode('utf-8'))
+            
+            # Send files
+            for file_path in file_paths:
+                self.send_file(client, file_path)
+            
+            # If folders are selected, send each file in the folder
+            if folder_paths:
+                for root, dirs, files in os.walk(folder_paths):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        self.send_file(client, file_path)
+            
+            # Signal the end of file transfer
+            client.send("FILE_TRANSFER_COMPLETE".encode('utf-8'))
+
+    def send_file(self, client, file_path):
+        # Send the file name first
+        client.send(f"FILE:{os.path.basename(file_path)}".encode('utf-8'))
+        # Then send the file size
+        file_size = os.path.getsize(file_path)
+        client.send(f"SIZE:{file_size}".encode('utf-8'))
+        
+        # Finally, send the file content
+        with open(file_path, 'rb') as file:
+            content = file.read(1024)
+            while content:
+                client.send(content)
+                content = file.read(1024)
 
     def on_close(self):
         self.server_running = False

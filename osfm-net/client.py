@@ -26,6 +26,30 @@ def handle_command(command_data):
         os.system("DISM /Online /Cleanup-Image /CheckHealth")
         os.system("DISM /Online /Cleanup-Image /ScanHealth")
         os.system("DISM /Online /Cleanup-Image /RestoreHealth")
+    elif command == "FILE_TRANSFER_INIT":
+        print("Receiving files...")
+        receive_and_save_files(client_socket)
+    elif command.startswith("FILE:"):
+        file_name = command.split(":")[1]
+        # Next message will be the file size
+        file_size = int(client_socket.recv(1024).decode('utf-8').split(":")[1])
+        # Now receive the file content
+        with open(file_name, 'wb') as file:
+            remaining = file_size
+            while remaining:
+                content = client_socket.recv(min(1024, remaining))
+                file.write(content)
+                remaining -= len(content)
+    elif command == "FILE_TRANSFER_COMPLETE":
+        print("File transfer complete.")
+
+def receive_and_save_files(client_socket):
+    while True:
+        data = client_socket.recv(1024).decode('utf-8')
+        if data == "FILE_TRANSFER_COMPLETE":
+            break
+        # Implement logic based on the received data
+        # This could involve receiving file names, sizes, and then the actual file content
 
 # Function to listen for commands from the server
 def listen_for_commands():
