@@ -4,7 +4,7 @@ import customtkinter as ctk
 from tkinter import scrolledtext, END
 
 ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
-#
+
 class ServerApp:
     def __init__(self, root):
         self.clients = {}
