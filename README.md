@@ -1,5 +1,12 @@
-# osfm
-A program that's capable of installing programs automatically with support for WIndows And Linux
+# OSFM Net
 
+### This is an extension of OSFM that allows administrators to perform the same functions of OSFM network-wide. 
+## Instructions:
 
-Hello everyone, I am a teenage novice programmer and I have made this program to make it easy for people to install Programs to their PC be it windows or linux. This program is built on C++ and is still a work in progress. Feel free to have a look at the code and if you wanna contribute, you're most welcome !
+### To use OSFM-Net:
+- Head over to the releases tab
+- Select the latest version of OSFM-Net
+- Download osfm-server.exe and osfm-client.exe
+- Launch osfm-server.exe on the main system and launch osfm-client.exe (as Admin) on all computers that you want to control
+- make a note of your main Computer's IP Address and enter it in osfm-client on all the systems that are running it
+- Now whatever commands you give from osfm-server will be automatically executed on all Systems running osfm-client
