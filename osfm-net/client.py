@@ -4,16 +4,19 @@ import subprocess
 from threading import Thread
 
 # Function to handle commands from the server
-def handle_command(command):
-    if command == 'install':
+def handle_command(command_data):
+    # First, split the command_data to get the command and any additional data
+    parts = command_data.split(':', 1)
+    command = parts[0]
+    if command == 'install' and len(parts) > 1:
         # Extract the software IDs sent by the server
-        software_ids = command_data.split(':')[1].split(',')
+        software_ids = parts[1].split(',')
         for software_id in software_ids:
             # Install each software using winget
             os.system(f"winget install --id={software_id.strip()} --accept-package-agreements --accept-source-agreements")
-    elif command == 'uninstall':
+    elif command == 'uninstall' and len(parts) > 1:
         # Extract the software IDs sent by the server
-        software_ids = command_data.split(':')[1].split(',')
+        software_ids = parts[1].split(',')
         for software_id in software_ids:
             # Uninstall each software using winget
             os.system(f"winget uninstall --id={software_id.strip()} --accept-package-agreements --accept-source-agreements")

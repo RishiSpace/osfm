@@ -4,12 +4,13 @@ import customtkinter as ctk
 from tkinter import scrolledtext, END
 
 ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
-
+#
 class ServerApp:
     def __init__(self, root):
         self.clients = {}
         self.root = root
-        self.root.title("Server Control Panel")
+        self.root.title("OSFM Control Panel")
+        self.server_running = True
 
         # Frame for buttons
         self.frame_buttons = ctk.CTkFrame(root)
@@ -38,6 +39,9 @@ class ServerApp:
         # Start server
         self.start_server()
 
+        # Bind the GUI close event
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
     def start_server(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = socket.gethostname()
@@ -47,28 +51,32 @@ class ServerApp:
 
         print("Server started. Waiting for connections...")
 
-        threading.Thread(target=self.accept_connections).start()
+        threading.Thread(target=self.accept_connections, daemon=True).start()
 
     def accept_connections(self):
-        while True:
-            client, address = self.server_socket.accept()
-            print(f"Connection from {address} has been established.")
+        while self.server_running:
+            self.server_socket.settimeout(1.0)  # Set timeout for the accept call
+            try:
+                client, address = self.server_socket.accept()
+                print(f"Connection from {address} has been established.")
 
-            self.clients[address] = client
+                self.clients[address] = client
 
-            self.connected_pcs_text.insert(END, f"{address}\n")
+                self.connected_pcs_text.insert(END, f"{address}\n")
 
-            threading.Thread(target=self.handle_client, args=(client, address)).start()
+                threading.Thread(target=self.handle_client, args=(client, address), daemon=True).start()
+            except socket.timeout:
+                continue
 
     def handle_client(self, client, address):
-        while True:
+        while self.server_running:
             try:
                 message = client.recv(1024).decode('utf-8')
                 if message == "DISCOVERABLE":
                     print(f"{address} is discoverable")
             except:
                 print(f"Lost connection to {address}")
-                self.clients.pop(address)
+                self.clients.pop(address, None)
                 return
 
     def send_command_to_clients(self, command):
@@ -85,6 +93,11 @@ class ServerApp:
 
     def fix_windows(self):
         self.send_command_to_clients("fix")
+
+    def on_close(self):
+        self.server_running = False
+        self.server_socket.close()
+        self.root.destroy()
 
 if __name__ == "__main__":
     root = ctk.CTk()
