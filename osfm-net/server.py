@@ -33,7 +33,7 @@ class ServerApp:
         self.software_ids_text.pack(pady=10)
 
         # ScrolledText for displaying connected PCs
-        self.connected_pcs_text = scrolledtext.ScrolledText(root, height=10)
+        self.connected_pcs_text = scrolledtext.ScrolledText(root, height=10, background='black', foreground='white')
         self.connected_pcs_text.pack(pady=10)
 
         # Start server
