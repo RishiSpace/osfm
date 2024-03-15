@@ -19,7 +19,7 @@ def handle_command(command_data):
         software_ids = parts[1].split(',')
         for software_id in software_ids:
             # Uninstall each software using winget
-            os.system(f"winget uninstall --id={software_id.strip()} --accept-package-agreements --accept-source-agreements")
+            os.system(f"winget uninstall --id={software_id.strip()}")
     elif command == 'fix':
         # Run Windows repair commands
         os.system("sfc /scannow")
@@ -46,8 +46,8 @@ def main():
     try:
         # Create a socket object
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Get the hostname
-        host = socket.gethostname()
+        # Ask for the hostname's IP address
+        host = input("Enter the hostname's IP address: ")
         port = 12345  # Server port
 
         # Connect to the server
