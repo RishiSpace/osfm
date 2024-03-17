@@ -137,18 +137,21 @@ class ServerApp:
             client.send("FILE_TRANSFER_COMPLETE".encode('utf-8'))
 
     def send_file(self, client, file_path):
-        # Send the file name first
-        client.send(f"FILE:{os.path.basename(file_path)}".encode('utf-8'))
-        # Then send the file size
-        file_size = os.path.getsize(file_path)
-        client.send(f"SIZE:{file_size}".encode('utf-8'))
-        
-        # Finally, send the file content
-        with open(file_path, 'rb') as file:
-            content = file.read(1024)
-            while content:
-                client.send(content)
+        try:
+            # Send the file name first
+            client.send(f"FILE:{os.path.basename(file_path)}".encode('utf-8'))
+            # Then send the file size
+            file_size = os.path.getsize(file_path)
+            client.send(f"SIZE:{file_size}".encode('utf-8'))
+            
+            # Finally, send the file content
+            with open(file_path, 'rb') as file:
                 content = file.read(1024)
+                while content:
+                    client.send(content)
+                    content = file.read(1024)
+        except ConnectionResetError:
+            print(f"Connection lost with client during file transfer.")
 
     def on_close(self):
         self.server_running = False
