@@ -2,6 +2,9 @@ import socket
 import os
 import subprocess
 from threading import Thread
+import shutil
+import win32net
+import win32netcon
 
 # Function to handle commands from the server
 def handle_command(command_data):
@@ -40,6 +43,8 @@ def handle_command(command_data):
                 content = client_socket.recv(min(1024, remaining))
                 file.write(content)
                 remaining -= len(content)
+        # Copy received file to SMB shared folder
+        subprocess.run(["copy", file_name, r"\\{host_ip}\osfm_share".format(host_ip=host)])
     elif command == "FILE_TRANSFER_COMPLETE":
         print("File transfer complete.")
 
@@ -55,7 +60,6 @@ def receive_and_save_files(client_socket):
 def listen_for_commands():
     while True:
         try:
-            # Receive command from the server
             command_data = client_socket.recv(1024).decode('utf-8')
             if command_data:
                 # Handle the received command
@@ -70,9 +74,8 @@ def main():
     try:
         # Create a socket object
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Ask for the hostname's IP address
         host = input("Enter the hostname's IP address: ")
-        port = 12345  # Server port
+        port = 12345
 
         # Connect to the server
         client_socket.connect((host, port))
@@ -84,8 +87,13 @@ def main():
         # Start listening for commands from the server
         Thread(target=listen_for_commands).start()
 
+        # Check and enable network sharing
+        subprocess.run(["net", "share", "osfm_share={path}".format(path=r"C:\Users\Public\Documents\osfm_share"), "/GRANT:Everyone,FULL"])
+
     except Exception as e:
         print(f"Unable to connect to the server: {e}")
 
 if __name__ == "__main__":
     main()
+
+

@@ -3,6 +3,9 @@ import threading
 import customtkinter as ctk
 from tkinter import scrolledtext, END, filedialog
 import os
+import shutil
+import win32net
+import win32netcon
 
 ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
 
@@ -118,23 +121,28 @@ class ServerApp:
         self.transfer_files_to_clients(file_paths, folder_paths)
 
     def transfer_files_to_clients(self, file_paths, folder_paths):
-        for client in self.clients.values():
-            # First, send a signal to prepare the client for file transfer
-            client.send("FILE_TRANSFER_INIT".encode('utf-8'))
-            
-            # Send files
-            for file_path in file_paths:
-                self.send_file(client, file_path)
-            
-            # If folders are selected, send each file in the folder
-            if folder_paths:
-                for root, dirs, files in os.walk(folder_paths):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        self.send_file(client, file_path)
-            
-            # Signal the end of file transfer
-            client.send("FILE_TRANSFER_COMPLETE".encode('utf-8'))
+        shared_folder_path = r"C:\Users\Public\Documents\osfm_share"
+        if not os.path.exists(shared_folder_path):
+            os.makedirs(shared_folder_path)
+            win32net.NetShareAdd(None, 2, {
+                'netname': 'osfm_share',
+                'type': win32netcon.STYPE_DISKTREE,
+                'remark': 'OSFM shared folder.',
+                'permissions': 0,
+                'max_uses': -1,
+                'current_uses': 0,
+                'path': shared_folder_path,
+                'passwd': ''
+            })
+
+        for file_path in file_paths:
+            shutil.copy(file_path, shared_folder_path)
+        
+        if folder_paths:
+            for root, dirs, files in os.walk(folder_paths):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    shutil.copy(file_path, shared_folder_path)
 
     def send_file(self, client, file_path):
         try:
