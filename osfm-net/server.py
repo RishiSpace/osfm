@@ -57,6 +57,14 @@ class ServerApp:
         self.file_transfer_button = ctk.CTkButton(root, text="Transfer Files", command=self.select_files)
         self.file_transfer_button.pack(pady=10)
 
+        # Text box for PowerShell commands
+        self.powershell_command_text = ctk.CTkEntry(root, placeholder_text="Enter PowerShell command")
+        self.powershell_command_text.pack(pady=10)
+
+        # Button to send PowerShell command to clients
+        self.send_powershell_command_button = ctk.CTkButton(root, text="Send PowerShell Command", command=self.send_powershell_command)
+        self.send_powershell_command_button.pack(pady=10)
+
         # Start server
         self.start_server()
 
@@ -101,8 +109,13 @@ class ServerApp:
                 return
 
     def send_command_to_clients(self, command):
-        for client in self.clients.values():
-            client.send(command.encode('utf-8'))
+        if command.startswith("powershell:"):
+            powershell_command = command.split(":", 1)[1]
+            for client in self.clients.values():
+                client.send(command.encode('utf-8'))
+        else:
+            for client in self.clients.values():
+                client.send(command.encode('utf-8'))
 
     def install_software(self):
         software_ids = self.software_ids_text.get()
@@ -160,6 +173,10 @@ class ServerApp:
                     content = file.read(1024)
         except ConnectionResetError:
             print(f"Connection lost with client during file transfer.")
+
+    def send_powershell_command(self):
+        powershell_command = self.powershell_command_text.get()
+        self.send_command_to_clients(f"powershell:{powershell_command}")
 
     def on_close(self):
         self.server_running = False

