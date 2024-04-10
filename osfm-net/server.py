@@ -1,20 +1,15 @@
 import socket
 import threading
 import customtkinter as ctk
-from tkinter import scrolledtext, END, filedialog
-import os
-import shutil
-import win32net
-import win32netcon
+from tkinter import scrolledtext, END
 
-ctk.set_appearance_mode("dark")  # Set the theme of GUI to dark
+ctk.set_appearance_mode("dark")
 
 class ServerApp:
     @staticmethod
     def get_private_ip():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            # doesn't even have to be reachable
             s.connect(('10.255.255.255', 1))
             IP = s.getsockname()[0]
         except Exception:
@@ -29,46 +24,32 @@ class ServerApp:
         self.root.title("OSFM Control Panel")
         self.server_running = True
 
-        # Frame for buttons
         self.frame_buttons = ctk.CTkFrame(root)
         self.frame_buttons.pack(pady=20)
 
-        # Install software button
         self.install_button = ctk.CTkButton(self.frame_buttons, text="Install Software", command=self.install_software)
         self.install_button.pack(side='left', padx=10)
 
-        # Uninstall software button
         self.uninstall_button = ctk.CTkButton(self.frame_buttons, text="Uninstall Software", command=self.uninstall_software)
         self.uninstall_button.pack(side='left', padx=10)
 
-        # Fix Windows button
         self.fix_button = ctk.CTkButton(self.frame_buttons, text="Fix Windows", command=self.fix_windows)
         self.fix_button.pack(side='left', padx=10)
 
-        # Text box for Winget program IDs
         self.software_ids_text = ctk.CTkEntry(root, placeholder_text="Enter Winget program IDs separated by commas")
         self.software_ids_text.pack(pady=10)
 
-        # ScrolledText for displaying connected PCs
         self.connected_pcs_text = scrolledtext.ScrolledText(root, height=10, background='black', foreground='white')
         self.connected_pcs_text.pack(pady=10)
 
-        # Button for selecting files or folders to send
-        self.file_transfer_button = ctk.CTkButton(root, text="Transfer Files", command=self.select_files)
-        self.file_transfer_button.pack(pady=10)
-
-        # Text box for PowerShell commands
         self.powershell_command_text = ctk.CTkEntry(root, placeholder_text="Enter PowerShell command")
         self.powershell_command_text.pack(pady=10)
 
-        # Button to send PowerShell command to clients
         self.send_powershell_command_button = ctk.CTkButton(root, text="Send PowerShell Command", command=self.send_powershell_command)
         self.send_powershell_command_button.pack(pady=10)
 
-        # Start server
         self.start_server()
 
-        # Bind the GUI close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def start_server(self):
@@ -84,7 +65,6 @@ class ServerApp:
 
     def accept_connections(self):
         while self.server_running:
-            self.server_socket.settimeout(1.0)  # Set timeout for the accept call
             try:
                 client, address = self.server_socket.accept()
                 print(f"Connection from {address} has been established.")
@@ -94,8 +74,9 @@ class ServerApp:
                 self.connected_pcs_text.insert(END, f"{address}\n")
 
                 threading.Thread(target=self.handle_client, args=(client, address), daemon=True).start()
-            except socket.timeout:
-                continue
+            except socket.error as e:
+                print(f"Error accepting connection: {e}")
+                break
 
     def handle_client(self, client, address):
         while self.server_running:
@@ -103,19 +84,25 @@ class ServerApp:
                 message = client.recv(1024).decode('utf-8')
                 if message == "DISCOVERABLE":
                     print(f"{address} is discoverable")
-            except:
-                print(f"Lost connection to {address}")
-                self.clients.pop(address, None)
-                return
+            except socket.error as e:
+                print(f"Error receiving message from {address}: {e}")
+                break
 
     def send_command_to_clients(self, command):
         if command.startswith("powershell:"):
             powershell_command = command.split(":", 1)[1]
             for client in self.clients.values():
-                client.send(command.encode('utf-8'))
+                try:
+                    client.sendall(f"powershell:{powershell_command}".encode('utf-8'))
+                except socket.error as e:
+                    print(f"Error sending command to client: {e}")
         else:
             for client in self.clients.values():
-                client.send(command.encode('utf-8'))
+                try:
+                    client.sendall(command.encode('utf-8'))
+                except socket.error as e:
+                    print(f"Error sending command to client: {e}")
+
 
     def install_software(self):
         software_ids = self.software_ids_text.get()
@@ -127,52 +114,6 @@ class ServerApp:
 
     def fix_windows(self):
         self.send_command_to_clients("fix")
-
-    def select_files(self):
-        file_paths = filedialog.askopenfilenames(title="Select files")
-        folder_paths = filedialog.askdirectory(title="Select folders")  # This allows only one folder to be selected at a time
-        self.transfer_files_to_clients(file_paths, folder_paths)
-
-    def transfer_files_to_clients(self, file_paths, folder_paths):
-        shared_folder_path = r"C:\Users\Public\Documents\osfm_share"
-        if not os.path.exists(shared_folder_path):
-            os.makedirs(shared_folder_path)
-            win32net.NetShareAdd(None, 2, {
-                'netname': 'osfm_share',
-                'type': win32netcon.STYPE_DISKTREE,
-                'remark': 'OSFM shared folder.',
-                'permissions': 0,
-                'max_uses': -1,
-                'current_uses': 0,
-                'path': shared_folder_path,
-                'passwd': ''
-            })
-
-        for file_path in file_paths:
-            shutil.copy(file_path, shared_folder_path)
-        
-        if folder_paths:
-            for root, dirs, files in os.walk(folder_paths):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    shutil.copy(file_path, shared_folder_path)
-
-    def send_file(self, client, file_path):
-        try:
-            # Send the file name first
-            client.send(f"FILE:{os.path.basename(file_path)}".encode('utf-8'))
-            # Then send the file size
-            file_size = os.path.getsize(file_path)
-            client.send(f"SIZE:{file_size}".encode('utf-8'))
-            
-            # Finally, send the file content
-            with open(file_path, 'rb') as file:
-                content = file.read(1024)
-                while content:
-                    client.send(content)
-                    content = file.read(1024)
-        except ConnectionResetError:
-            print(f"Connection lost with client during file transfer.")
 
     def send_powershell_command(self):
         powershell_command = self.powershell_command_text.get()
