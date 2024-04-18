@@ -2,6 +2,8 @@ import socket
 import threading
 import customtkinter as ctk
 from tkinter import scrolledtext, END
+import os
+import subprocess
 
 ctk.set_appearance_mode("dark")
 
@@ -89,19 +91,12 @@ class ServerApp:
                 break
 
     def send_command_to_clients(self, command):
-        if command.startswith("powershell:"):
-            powershell_command = command.split(":", 1)[1]
-            for client in self.clients.values():
-                try:
-                    client.sendall(f"powershell:{powershell_command}".encode('utf-8'))
-                except socket.error as e:
-                    print(f"Error sending command to client: {e}")
-        else:
-            for client in self.clients.values():
-                try:
-                    client.sendall(command.encode('utf-8'))
-                except socket.error as e:
-                    print(f"Error sending command to client: {e}")
+        for client in self.clients.values():
+            try:
+                print(f"Sending command to client {client}: {command}")
+                client.sendall(command.encode('utf-8'))
+            except Exception as e:
+                print(f"Error sending command to client: {e}")
 
 
     def install_software(self):
@@ -117,7 +112,7 @@ class ServerApp:
 
     def send_powershell_command(self):
         powershell_command = self.powershell_command_text.get()
-        self.send_command_to_clients(f"powershell:{powershell_command}")
+        self.send_command_to_clients(f"os:{powershell_command}")
 
     def on_close(self):
         self.server_running = False
@@ -128,3 +123,5 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = ServerApp(root)
     root.mainloop()
+
+
