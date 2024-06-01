@@ -1,9 +1,6 @@
 #include <iostream>
 #include <string>
 #include <thread>
-
-#include "gpu_detector.cpp" // Include a utility to detect GPU types
-
 #ifdef _WIN32
 #include "capture_windows.cpp"
 #else
@@ -69,20 +66,20 @@ GPUType detectPrimaryGPU() {
 GPUType detectedGPU = detectPrimaryGPU();
 switch (detectedGPU) {
     case GPUType::NVIDIA:
-        #include "encoder_nvenc.cpp"
+        #include "enc_nvenc.cpp"
         break;
     case GPUType::AMD:
-        #include "encoder_amf.cpp"
+        #include "enc_amf.cpp"
         break;
     case GPUType::INTEL:
-        #include "encoder_intel.cpp" // Assuming there's an Intel encoder available
+        #include "enc_intel.cpp" // Assuming there's an Intel encoder available
         break;
     default:
-        #include "encoder_generic.cpp" // Fallback generic encoder if GPU type is unknown
+        cout<<"Unsupported GPU type"<<endl;
         break;
 }
 
-#include "vulkan_renderer.cpp"
+#include "vulkan_ren.cpp"
 #include "streamer.cpp"
 #include "client.cpp"
 
