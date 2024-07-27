@@ -37,6 +37,7 @@ def main():
     server_ip = "255.255.255.255"  # Broadcast address
     server_port = 12345
     buffer_size = 1024
+    tcp_socket = None  # Initialize tcp_socket to None
 
     while True:
         try:
@@ -74,7 +75,8 @@ def main():
         except Exception as e:
             print(f"Error: {e}")
         finally:
-            tcp_socket.close()
+            if tcp_socket:
+                tcp_socket.close()
             time.sleep(5)  # Wait before retrying
 
 if __name__ == "__main__":
