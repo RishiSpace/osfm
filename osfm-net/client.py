@@ -2,6 +2,7 @@ import socket
 import subprocess
 import getpass
 import time
+import os
 
 def discover_server(port=12345):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -71,12 +72,47 @@ def enable_rdp():
     """
     execute_command(allow_any_user_command)
 
+def download_and_install_software(software_id, server_ip, port=12345):
+    try:
+        # Download the software from the server
+        print(f"Downloading software: {software_id}")
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((server_ip, port))
+            s.sendall(f"DOWNLOAD {software_id}".encode())
+            
+            # Receive the file from the server
+            with open(f"{software_id}.exe", "wb") as f:
+                while True:
+                    data = s.recv(4096)
+                    if not data:
+                        break
+                    f.write(data)
+        
+        print(f"Downloaded {software_id}.exe")
+
+        # Determine the install command based on the software
+        install_command = f"{software_id}.exe /silent"  # Basic silent install command; adjust if needed
+
+        print(f"Installing {software_id}...")
+        execute_command(install_command)
+
+        print(f"Installed {software_id} successfully")
+
+    except FileNotFoundError as e:
+        print(f"File not found error: {e}")
+    except socket.error as e:
+        print(f"Socket error: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"Subprocess error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 def main():
     port = 12345
     client_socket = None
 
-    enable_rdp()  # Ensure RDP is enabled
+    # Enable Remote Desktop at the start
+    enable_rdp()
 
     while True:
         if client_socket is None:
@@ -96,7 +132,10 @@ def main():
                     raise ConnectionResetError("Server disconnected")
                 command = data.decode()
                 print(f"Received command: {command}")
-                if command.startswith("POWERSHELL "):
+                if command.startswith("DOWNLOAD "):
+                    software_id = command[len("DOWNLOAD "):]
+                    download_and_install_software(software_id, server_ip, port)
+                elif command.startswith("POWERSHELL "):
                     ps_command = command[len("POWERSHELL "):]
                     execute_command(f'powershell -Command "{ps_command}"')
                 elif command == "INSTALL":
