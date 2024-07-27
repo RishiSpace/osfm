@@ -45,18 +45,29 @@ def execute_command(command):
         print(f"Command execution failed: {e}")
 
 def enable_rdp():
-    print("Enabling Remote Desktop...")
-    # Enable RDP in Windows
+    print("Enabling Remote Desktop and configuring firewall for any connections...")
     rdp_script = """
+    # Enable Remote Desktop
     $regPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server"
     $rdpEnabled = Get-ItemProperty -Path $regPath -Name "fDenyTSConnections" | Select-Object -ExpandProperty "fDenyTSConnections"
     if ($rdpEnabled -eq 1) {
         Set-ItemProperty -Path $regPath -Name "fDenyTSConnections" -Value 0
-        # Allow RDP through Windows Firewall
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Write-Output "Remote Desktop enabled."
     } else {
         Write-Output "Remote Desktop is already enabled."
+    }
+
+    # Allow RDP through Windows Firewall
+    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    Write-Output "RDP allowed through firewall."
+
+    # Allow connections from any IP by setting the scope to "Any"
+    $firewallRule = Get-NetFirewallRule -DisplayGroup "Remote Desktop"
+    if ($firewallRule) {
+        Set-NetFirewallRule -DisplayGroup "Remote Desktop" -RemoteAddress "Any"
+        Write-Output "Firewall rule updated to allow connections from any IP."
+    } else {
+        Write-Output "Firewall rule for Remote Desktop not found."
     }
     """
     execute_command(f'powershell -Command "{rdp_script}"')
