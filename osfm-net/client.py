@@ -1,6 +1,5 @@
 import socket
 import subprocess
-import platform
 import getpass
 import time
 
@@ -54,7 +53,7 @@ def enable_rdp():
     "
     """
     execute_command(rdp_commands)
-    print("Remoting Enabled !")
+    print("Remote Desktop enabled and configured!")
 
 def main():
     port = 12345
