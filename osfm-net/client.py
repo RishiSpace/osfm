@@ -1,83 +1,86 @@
 import socket
 import subprocess
-import pypsrp
-import time
 import platform
 import getpass
+import time
 
-def check_and_enable_rdp():
-    # Function to check and enable RDP on the client machine
+def discover_server(port=12345):
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    udp_socket.settimeout(5)
+
     try:
-        if platform.system() == "Windows":
-            username = getpass.getuser()
-            password = getpass.getpass(prompt="Enter password for RDP enabling: ")
-            
-            client = pypsrp.Client("localhost", username, password)
+        udp_socket.sendto(b"DISCOVER_SERVER", ('<broadcast>', port))
+        print("Broadcasted discovery message.")
+        try:
+            response, addr = udp_socket.recvfrom(1024)
+            if response == b"SERVER_HERE":
+                return addr[0]
+        except socket.timeout:
+            print("No server response received.")
+    except socket.error as e:
+        print(f"UDP socket error: {e}")
+    finally:
+        udp_socket.close()
+    return None
 
-            # Check if RDP is enabled
-            rdp_check_command = "Get-Service -Name TermService"
-            result = client.execute_ps(rdp_check_command)
-            print(f"RDP Status: {result}")
+def connect_to_server(server_ip, port=12345):
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.settimeout(10)
+    try:
+        client_socket.connect((server_ip, port))
+        # Send hostname to server
+        hostname = getpass.getuser()  # You can use socket.gethostname() if you want the full machine name
+        client_socket.sendall(hostname.encode())
+        return client_socket
+    except (socket.timeout, socket.error) as e:
+        print(f"Failed to connect to server: {e}")
+        client_socket.close()
+        return None
 
-            # Enable RDP if not enabled
-            if "Running" not in result:
-                enable_rdp_command = """
-                Set-Service -Name TermService -StartupType Automatic
-                Start-Service -Name TermService
-                """
-                print("Enabling RDP...")
-                client.execute_ps(enable_rdp_command)
-                print("RDP Enabled.")
-        else:
-            print("RDP enabling is only supported on Windows.")
-    except Exception as e:
-        print(f"Error enabling RDP: {e}")
+def execute_command(command):
+    try:
+        subprocess.run(command, check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
 
 def main():
-    server_ip = "255.255.255.255"  # Broadcast address
-    server_port = 12345
-    buffer_size = 1024
-    tcp_socket = None  # Initialize tcp_socket to None
+    port = 12345
+    client_socket = None
 
     while True:
-        try:
-            # Create a UDP socket for discovering the server
-            udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            udp_socket.settimeout(5)
-            udp_socket.sendto(b"DISCOVER_SERVER", (server_ip, server_port))
-
-            # Create a TCP socket for connecting to the server
-            tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            tcp_socket.settimeout(5)
-            tcp_socket.connect((server_ip, server_port))
-
-            print("Connected to server")
-
-            # Start RDP check and enabling if needed
-            check_and_enable_rdp()
-
-            while True:
-                try:
-                    data = tcp_socket.recv(buffer_size)
-                    if not data:
-                        break
-                    print(f"Received: {data.decode()}")
-                except socket.timeout:
-                    print("Connection timed out, retrying...")
-                    break
-                except Exception as e:
-                    print(f"Connection error: {e}")
-                    break
-
-        except socket.timeout:
-            print("Server not found, retrying...")
-        except Exception as e:
-            print(f"Error: {e}")
-        finally:
-            if tcp_socket:
-                tcp_socket.close()
-            time.sleep(5)  # Wait before retrying
+        if client_socket is None:
+            print("Searching for server...")
+            server_ip = discover_server(port)
+            if server_ip:
+                print(f"Found server at {server_ip}.")
+                client_socket = connect_to_server(server_ip, port)
+            else:
+                print("Retrying in 5 seconds...")
+                time.sleep(5)
+        else:
+            try:
+                client_socket.settimeout(None)  # No timeout for receive operations
+                data = client_socket.recv(1024)
+                if not data:
+                    raise ConnectionResetError("Server disconnected")
+                command = data.decode()
+                print(f"Received command: {command}")
+                if command.startswith("POWERSHELL "):
+                    ps_command = command[len("POWERSHELL "):]
+                    execute_command(f'powershell -Command "{ps_command}"')
+                elif command == "INSTALL":
+                    execute_command("winget install SomeSoftware")
+                elif command == "UNINSTALL":
+                    execute_command("winget uninstall SomeSoftware")
+                elif command == "FIX_WINDOWS":
+                    execute_command("sfc /scannow")
+            except (socket.error, ConnectionResetError) as e:
+                print(f"Connection issue: {e}")
+                client_socket.close()
+                client_socket = None
+                print("Reconnecting in 5 seconds...")
+                time.sleep(5)
 
 if __name__ == "__main__":
     main()
