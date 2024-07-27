@@ -1,127 +1,160 @@
 import socket
+import customtkinter as CTk
 import threading
-import customtkinter as ctk
-from tkinter import scrolledtext, END
-import os
 import subprocess
+import platform
+import getpass
+import pypsrp
 
-ctk.set_appearance_mode("dark")
-
-class ServerApp:
-    @staticmethod
-    def get_private_ip():
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect(('10.255.255.255', 1))
-            IP = s.getsockname()[0]
-        except Exception:
-            IP = '127.0.0.1'
-        finally:
-            s.close()
-        return IP
-    
-    def __init__(self, root):
-        self.clients = {}
-        self.root = root
-        self.root.title("OSFM Control Panel")
-        self.server_running = True
-
-        self.frame_buttons = ctk.CTkFrame(root)
-        self.frame_buttons.pack(pady=20)
-
-        self.install_button = ctk.CTkButton(self.frame_buttons, text="Install Software", command=self.install_software)
-        self.install_button.pack(side='left', padx=10)
-
-        self.uninstall_button = ctk.CTkButton(self.frame_buttons, text="Uninstall Software", command=self.uninstall_software)
-        self.uninstall_button.pack(side='left', padx=10)
-
-        self.fix_button = ctk.CTkButton(self.frame_buttons, text="Fix Windows", command=self.fix_windows)
-        self.fix_button.pack(side='left', padx=10)
-
-        self.software_ids_text = ctk.CTkEntry(root, placeholder_text="Enter Winget program IDs separated by commas")
-        self.software_ids_text.pack(pady=10)
-
-        self.connected_pcs_text = scrolledtext.ScrolledText(root, height=10, background='black', foreground='white')
-        self.connected_pcs_text.pack(pady=10)
-
-        self.powershell_command_text = ctk.CTkEntry(root, placeholder_text="Enter PowerShell command")
-        self.powershell_command_text.pack(pady=10)
-
-        self.send_powershell_command_button = ctk.CTkButton(root, text="Send PowerShell Command", command=self.send_powershell_command)
-        self.send_powershell_command_button.pack(pady=10)
-
-        self.start_server()
-
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
-
-    def start_server(self):
+class Server:
+    def __init__(self, host="0.0.0.0", port=12345):
+        self.server_ip = host
+        self.server_port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = self.get_private_ip()
-        port = 12345
-        self.server_socket.bind((host, port))
-        self.server_socket.listen()
+        self.server_socket.bind((self.server_ip, self.server_port))
+        self.server_socket.listen(5)
+        self.connections = {}
+        self.setup_ui()
+        self.start_udp_listener()  # Start the UDP listener for client discovery
+        self.start_tcp_server()  # Start the TCP server
+        self.root.mainloop()
 
-        print(f"Server started on {host}. Waiting for connections...")
+    def setup_ui(self):
+        self.root = CTk.CTk()
+        self.root.geometry("600x400")
+        self.root.title("OSFM-Net")  # Updated GUI title
 
-        threading.Thread(target=self.accept_connections, daemon=True).start()
+        self.install_button = CTk.CTkButton(self.root, text="Install Software", command=self.install_software)
+        self.install_button.pack(pady=10)
 
-    def accept_connections(self):
-        while self.server_running:
+        self.uninstall_button = CTk.CTkButton(self.root, text="Uninstall Software", command=self.uninstall_software)
+        self.uninstall_button.pack(pady=10)
+
+        self.fix_button = CTk.CTkButton(self.root, text="Fix Windows", command=self.fix_windows)
+        self.fix_button.pack(pady=10)
+
+        # Textbox and button for sending PowerShell commands
+        self.ps_command_entry = CTk.CTkEntry(self.root, placeholder_text="Enter PowerShell command")
+        self.ps_command_entry.pack(pady=10, fill='x')
+
+        self.powershell_button = CTk.CTkButton(self.root, text="Send PowerShell Command", command=self.send_powershell)
+        self.powershell_button.pack(pady=10)
+
+        # Frame to list connected clients
+        self.clients_frame = CTk.CTkFrame(self.root)
+        self.clients_frame.pack(pady=10, fill='both', expand=True)
+
+    def start_udp_listener(self):
+        udp_thread = threading.Thread(target=self.udp_listener, daemon=True)
+        udp_thread.start()
+
+    def udp_listener(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+                udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                udp_socket.bind((self.server_ip, self.server_port))
+                print("UDP listener started")
+                while True:
+                    data, addr = udp_socket.recvfrom(1024)
+                    if data == b"DISCOVER_SERVER":
+                        udp_socket.sendto(b"SERVER_HERE", addr)
+                        print(f"Sent response to {addr}")
+        except Exception as e:
+            print(f"UDP listener error: {e}")
+
+    def start_tcp_server(self):
+        tcp_thread = threading.Thread(target=self.tcp_server, daemon=True)
+        tcp_thread.start()
+
+    def tcp_server(self):
+        print("TCP server started, waiting for connections...")
+        while True:
             try:
-                client, address = self.server_socket.accept()
-                print(f"Connection from {address} has been established.")
-
-                self.clients[address] = client
-
-                self.connected_pcs_text.insert(END, f"{address}\n")
-
-                threading.Thread(target=self.handle_client, args=(client, address), daemon=True).start()
-            except socket.error as e:
-                print(f"Error accepting connection: {e}")
-                break
-
-    def handle_client(self, client, address):
-        while self.server_running:
-            try:
-                message = client.recv(1024).decode('utf-8')
-                if message == "DISCOVERABLE":
-                    print(f"{address} is discoverable")
-            except socket.error as e:
-                print(f"Error receiving message from {address}: {e}")
-                break
-
-    def send_command_to_clients(self, command):
-        for client in self.clients.values():
-            try:
-                print(f"Sending command to client {client}: {command}")
-                client.sendall(command.encode('utf-8'))
+                client_socket, address = self.server_socket.accept()
+                self.connections[client_socket] = {'address': address, 'hostname': None}
+                print(f"Client {address} connected")
+                threading.Thread(target=self.handle_client, args=(client_socket,), daemon=True).start()
             except Exception as e:
-                print(f"Error sending command to client: {e}")
+                print(f"TCP server error: {e}")
 
+    def handle_client(self, client_socket):
+        try:
+            hostname = client_socket.recv(1024).decode()
+            if hostname:
+                self.connections[client_socket]['hostname'] = hostname
+                self.update_client_list()
+                self.check_and_enable_rdp(client_socket, hostname)
+            while True:
+                data = client_socket.recv(1024)
+                if not data:
+                    break
+                print(f"Received: {data.decode()}")
+        except Exception as e:
+            print(f"Client connection error: {e}")
+        finally:
+            client_socket.close()
+            del self.connections[client_socket]
+            self.update_client_list()
+
+    def update_client_list(self):
+        for widget in self.clients_frame.winfo_children():
+            widget.destroy()
+
+        for conn, info in self.connections.items():
+            hostname = info['hostname'] or "Unknown"
+            button = CTk.CTkButton(self.clients_frame, text=hostname, command=lambda conn=conn: self.rdp_to_client(conn))
+            button.pack(pady=5, fill='x')
+
+    def rdp_to_client(self, conn):
+        address = self.connections[conn]['address'][0]
+        print(f"Initiating RDP to {address}")
+        # For Windows: Use mstsc to initiate RDP connection
+        if platform.system() == "Windows":
+            subprocess.run(f"mstsc /v:{address}", shell=True)
+        else:
+            print("RDP not supported on this operating system")
+
+    def check_and_enable_rdp(self, client_socket, hostname):
+        address = self.connections[client_socket]['address'][0]
+        username = getpass.getuser()
+        password = input(f"Enter password for {username}@{address}: ")
+
+        # Using pypsrp for PowerShell commands
+        client = pypsrp.Client(address, username, password)
+
+        # Check if RDP is enabled
+        rdp_check_command = "Get-Service -Name TermService"
+        result = client.execute_ps(rdp_check_command)
+        print(f"RDP Status on {hostname}: {result}")
+
+        # Enable RDP if not enabled
+        if "Running" not in result:
+            enable_rdp_command = """
+            Set-Service -Name TermService -StartupType Automatic
+            Start-Service -Name TermService
+            """
+            print(f"Enabling RDP on {hostname}...")
+            client.execute_ps(enable_rdp_command)
+
+    def send_command(self, command):
+        for conn in self.connections:
+            try:
+                conn.sendall(command.encode())
+            except Exception as e:
+                print(f"Failed to send command: {e}")
 
     def install_software(self):
-        software_ids = self.software_ids_text.get()
-        self.send_command_to_clients(f"install:{software_ids}")
+        self.send_command("INSTALL")
 
     def uninstall_software(self):
-        software_ids = self.software_ids_text.get()
-        self.send_command_to_clients(f"uninstall:{software_ids}")
+        self.send_command("UNINSTALL")
 
     def fix_windows(self):
-        self.send_command_to_clients("fix")
+        self.send_command("FIX_WINDOWS")
 
-    def send_powershell_command(self):
-        powershell_command = self.powershell_command_text.get()
-        self.send_command_to_clients(f"os:{powershell_command}")
-
-    def on_close(self):
-        self.server_running = False
-        self.server_socket.close()
-        self.root.destroy()
+    def send_powershell(self):
+        command = self.ps_command_entry.get()
+        self.send_command(f"POWERSHELL {command}")
 
 if __name__ == "__main__":
-    root = ctk.CTk()
-    app = ServerApp(root)
-    root.mainloop()
-
-
+    server = Server()

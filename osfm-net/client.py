@@ -1,86 +1,86 @@
 import socket
 import subprocess
-import os
-from threading import Thread
+import platform
+import getpass
+import time
 
-def handle_command(command_data):
-    parts = command_data.split(':', 1)
-    command = parts[0]
-    if command == 'install' and len(parts) > 1:
-        software_ids = parts[1].split(',')
-        for software_id in software_ids:
-            subprocess.run(["winget", "install", "--id=" + software_id.strip(), "--accept-package-agreements", "--accept-source-agreements"])
-    elif command == 'uninstall' and len(parts) > 1:
-        software_ids = parts[1].split(',')
-        for software_id in software_ids:
-            subprocess.run(["winget", "uninstall", "--id=" + software_id.strip()])
-    elif command == 'fix':
-        subprocess.run(["sfc", "/scannow"])
-        subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"])
-        subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"])
-        subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"])
-    elif command.startswith("os:"):
-        os_command = command.split(":", 1)[1]
-        if os.name == 'nt':  # Check if the OS is Windows
-            try:
-                output = subprocess.check_output(["powershell", "-Command", os_command], shell=True, stderr=subprocess.STDOUT)
-                client_socket.sendall(output)
-            except subprocess.CalledProcessError as e:
-                error_msg = str(e).encode('utf-8')
-                client_socket.sendall(error_msg)
-            else:
-                try:
-                    output = subprocess.check_output(os_command, shell=True, stderr=subprocess.STDOUT)
-                    client_socket.sendall(output)
-                except subprocess.CalledProcessError as e:
-                    error_msg = str(e).encode('utf-8')
-                    client_socket.sendall(error_msg)
+def discover_server(port=12345):
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    udp_socket.settimeout(5)
 
-
-
-
-
-def listen_for_commands():
-    while True:
-        try:
-            command_data = client_socket.recv(1024).decode('utf-8')
-            if command_data:
-                print(f"Received command: {command_data}")
-                execute_command(command_data)
-        except Exception as e:
-            print(f"Error receiving command: {e}")
-            break
-
-def execute_command(command_data):
     try:
-        if command_data.startswith("os:"):
-            os_command = command_data.split(":", 1)[1]
-            output = subprocess.check_output(["powershell", "-Command", os_command], shell=True, stderr=subprocess.STDOUT)
-            print(output.decode('utf-8'))
-            client_socket.sendall(output)
-        else:
-            print("naaaaa")
-    except Exception as e:
-        print(f"Error executing command: {e}")
+        udp_socket.sendto(b"DISCOVER_SERVER", ('<broadcast>', port))
+        print("Broadcasted discovery message.")
+        try:
+            response, addr = udp_socket.recvfrom(1024)
+            if response == b"SERVER_HERE":
+                return addr[0]
+        except socket.timeout:
+            print("No server response received.")
+    except socket.error as e:
+        print(f"UDP socket error: {e}")
+    finally:
+        udp_socket.close()
+    return None
 
+def connect_to_server(server_ip, port=12345):
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.settimeout(10)
+    try:
+        client_socket.connect((server_ip, port))
+        # Send hostname to server
+        hostname = getpass.getuser()  # You can use socket.gethostname() if you want the full machine name
+        client_socket.sendall(hostname.encode())
+        return client_socket
+    except (socket.timeout, socket.error) as e:
+        print(f"Failed to connect to server: {e}")
+        client_socket.close()
+        return None
+
+def execute_command(command):
+    try:
+        subprocess.run(command, check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
 
 def main():
-    global client_socket
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = input("Enter the server's IP address: ")
-        port = 12345
+    port = 12345
+    client_socket = None
 
-        client_socket.connect((host, port))
-        print("Connected to the server.")
-
-        client_socket.sendall("DISCOVERABLE".encode('utf-8'))
-
-        Thread(target=listen_for_commands).start()
-
-    except Exception as e:
-        print(f"Unable to connect to the server: {e}")
+    while True:
+        if client_socket is None:
+            print("Searching for server...")
+            server_ip = discover_server(port)
+            if server_ip:
+                print(f"Found server at {server_ip}.")
+                client_socket = connect_to_server(server_ip, port)
+            else:
+                print("Retrying in 5 seconds...")
+                time.sleep(5)
+        else:
+            try:
+                client_socket.settimeout(None)  # No timeout for receive operations
+                data = client_socket.recv(1024)
+                if not data:
+                    raise ConnectionResetError("Server disconnected")
+                command = data.decode()
+                print(f"Received command: {command}")
+                if command.startswith("POWERSHELL "):
+                    ps_command = command[len("POWERSHELL "):]
+                    execute_command(f'powershell -Command "{ps_command}"')
+                elif command == "INSTALL":
+                    execute_command("winget install SomeSoftware")
+                elif command == "UNINSTALL":
+                    execute_command("winget uninstall SomeSoftware")
+                elif command == "FIX_WINDOWS":
+                    execute_command("sfc /scannow")
+            except (socket.error, ConnectionResetError) as e:
+                print(f"Connection issue: {e}")
+                client_socket.close()
+                client_socket = None
+                print("Reconnecting in 5 seconds...")
+                time.sleep(5)
 
 if __name__ == "__main__":
     main()
-
