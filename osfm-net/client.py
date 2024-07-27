@@ -54,6 +54,7 @@ def enable_rdp():
     "
     """
     execute_command(rdp_commands)
+    print("Remoting Enabled !")
 
 def main():
     port = 12345
