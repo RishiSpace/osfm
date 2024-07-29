@@ -1,566 +1,242 @@
-#include<iostream>
-#include<stdio.h>
-#include<math.h>
-#include<string.h>
+#include <iostream>
+#include <cstdlib>
+#include <string>
 using namespace std;
-int Linux()
-{
-    char l,lp;
-    printf("We've detected that you are using Linux, could you please specify which Distribution of Linux you are using ?\n\n");
-    printf("1. Debian (Ubuntu, PopOs, Mint, ZorinOS)\n");
-    printf("2. Arch Linux (Manjaro, Garuda)\n");
-    printf("3. Fedora\n\n");
-    printf("Enter your choice (Number only): ");
-    scanf("%d",&l);
-    printf("\nWhich program do you wanna install ? \n\n");
-    printf("1. Firefox\n");
-    printf("2. Neofetch\n");
-    printf("3. terminator\n");
-    printf("4. spotify\n");
-    printf("5. chrome\n");
-    printf("6. vscode\n");
-    printf("7. Steam\n");
-    printf("8. Lutris\n");
-    printf("9. Brave\n");
-    printf("10. VLC Media Player\n");
-    printf("11. Custom (Enter name of the program)\n");
-    printf("0. All of the above\n\n");
-    printf("Enter your choice (Number only): ");
-    scanf ("%d",&lp);
-    if (l == 1)
-    {
-        if (lp == 1)
-        {
-            //Firefox
-            printf("Installing Firefox, please enter your password if prompted\n");
-            system ("sudo apt install firefox");
-        }
-        else if (lp == 2)
-        {
-            //Neofetch
-            printf("Installing neofetch, please enter your password if prompted\n");
-            system ("sudo apt install neofetch");
-        }
-        else if (lp == 3)
-        {
-            //Terminator
-            printf("Installing Terminator, please enter your password if prompted\n");
-            system ("sudo apt install terminator");
-        }
-        else if (lp == 4)
-        {
-            //spotify
-            printf("Installing Spotify, please enter your password if prompted\n");
-            system ("sudo apt install snap && sudo snap install spotify");
-        }
-        else if (lp == 5)
-        {
-            //chrome
-            printf("Installing Chrome, please enter your password if prompted\n");
-            system ("sudo apt install snap && sudo snap install chrome");
-        }
-        else if (lp == 6)
-        {
-            //vscode
-            printf("Installing vscode, please enter your passowrd if prompted\n");
-            system ("wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg");
-            system ("sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/");
-            system ("sudo sh -c 'echo 'deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] 'https://packages.microsoft.com/repos/code stable main' > '/etc/apt/sources.list.d/vscode.list'");
-            system ("rm -f packages.microsoft.gpg");
-            system ("sudo apt install apt-transport-https && sudo apt update && sudo apt install code");
-        }
-        else if (lp == 7)
-        {
-            //steam
-            printf("Installing Steam, please enter your passowrd if prompted\n");
-            system ("sudo apt install steam");
-        }
-        else if (lp == 8)
-        {
-            //lutris
-            printf("Installing Lutris, please enter your passowrd if prompted\n");
-            system ("sudo apt install lutris");
-        }
-        else if (lp == 9)
-        {
-            //brave
-            printf("Installing Brave browser, please enter your passowrd if prompted\n");
-            system ("sudo apt install apt-transport-https curl");
-            system ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
-            system ("'echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main'|sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
-            system ("sudo apt update");
-            system ("sudo apt install brave-browser");
-        }
-        else if (lp == 10)
-        {
-            //VLC Media player
-            printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
-            system ("sudo apt install vlc");
-        }
-        else if (lp == 0)
-        {
-            //All of the above
-            printf("Installing all programs mentioned above (This may take some time), please enter your password if prompted\n");
-            system ("sudo apt install firefox");
-            system ("sudo apt install neofetch");
-            system ("sudo apt install terminator");
-            system ("sudo apt install snap && sudo snap install spotify");
-            system ("sudo apt install snap && sudo snap install chrome");
-            system ("wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg");
-            system ("sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/");
-            system ("sudo sh -c 'echo 'deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] 'https://packages.microsoft.com/repos/code stable main' > '/etc/apt/sources.list.d/vscode.list'");
-            system ("rm -f packages.microsoft.gpg");
-            system ("sudo apt install apt-transport-https && sudo apt update && sudo apt install code");
-            system ("sudo apt install steam");
-            system ("sudo apt install lutris");
-            system ("sudo apt install apt-transport-https curl");
-            system ("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
-            system ("'echo 'deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main'|sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
-            system ("sudo apt update");
-            system ("sudo apt install brave-browser");
-            system ("sudo apt install vlc");
-        }
-        else if (lp == 11)
-        {
-            char s[20],p[20];
-            strcat(s,"sudo apt install");
-            strcat(s," ");
-            printf("Enter the name of the program you want to install: ");
-            scanf("%s",p);
-            strcat(s,p);
-            system (s);
-        }
-        else
-        {
-            printf("sorry wrong input");
-        }
+
+void install_program(const string& distro, const string& package_manager, const string& package) {
+    string command = "sudo " + package_manager + " install " + package;
+    cout << "Installing " << package << ", please enter your password if prompted\n";
+    system(command.c_str());
+}
+
+void install_custom_program(const string& package_manager) {
+    string program;
+    cout << "Enter the name of the program you want to install: ";
+    cin >> program;
+    install_program("", package_manager, program);
+}
+
+int Linux() {
+    int l, lp;
+    cout << "We've detected that you are using Linux, could you please specify which Distribution of Linux you are using?\n\n";
+    cout << "1. Debian (Ubuntu, PopOs, Mint, ZorinOS)\n";
+    cout << "2. Arch Linux (Manjaro, Garuda)\n";
+    cout << "3. Fedora\n\n";
+    cout << "Enter your choice (Number only): ";
+    cin >> l;
+
+    if (l < 1 || l > 3) {
+        cout << "Sorry, wrong choice\n";
+        return 1;
     }
-    else if (l == 2)
-    {
-        //prerequisites
-        printf("Hang on, we're making sure you can install the programs, please enter your password if prompted\n");
-        system ("sudo pacman -S yay");
-        if (lp == 1)
-        {
-            //Firefox
-            printf("Installing Firefox, please enter your password if prompted\n");
-            system ("sudo pacman -s firefox");
-        }
-        else if (lp == 2)
-        {
-            //Neofetch
-            printf("Installing Neofetch, please enter your password if prompted\n");
-            system ("sudo pacman -S neofetch");
-        }
-        else if (lp == 3)
-        {
-            //terminator
-            printf("Installing teminator, please enter your password if prompted\n");
-            system ("sudo pacman -S terminator");
-        }
-        else if (lp == 4)
-        {
-            //spotify
-            printf("Installing spotify, please enter your password if prompted\n");
-            system ("yay -S spotify");
-        }
-        else if (lp == 5)
-        {
-            //chrome
-            printf("Installing chrome, please enter your password if prompted\n");
-            system ("yay -S chrome");
-        }
-        else if (lp == 6)
-        {
-            //vscode
-            printf("Installing vscode, please enter your password if prompted\n");
-            system ("yay -S vscode");
-        }
-        else if (lp == 7)
-        {
-            //steam
-            printf("Installing Steam, please enter your passowrd if prompted\n");
-            system ("yay -S steam");
-        }
-        else if (lp == 8)
-        {
-            //lutris
-            printf("Installing Lutris, please enter your passowrd if prompted\n");
-            system ("yay -S lutris");
-        }
-        else if (lp == 9)
-        {
-            //brave
-            printf("Installing Brave browser, please enter your passowrd if prompted\n");
-            system ("yay -S brave");
-        }
-        else if (lp == 10)
-        {
-            //VLC Media player
-            printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
-            system ("sudo pacman -S vlc");
-        }
-        else if (lp == 11)
-        {
-            char s[20],p[20];
-            strcat(s,"sudo pacman -S");
-            strcat(s," ");
-            printf("Enter the name of the program you want to install: ");
-            scanf("%s",p);
-            strcat(s,p);
-            system (s);
-        }
-        else if (lp == 0)
-        {
-            //All of the above
-            printf("Installing all programs mentioned above (This may take some time), please enter your password if prompted\n");
-            system ("sudo pacman -s firefox");
-            system ("sudo pacman -S neofetch");
-            system ("sudo pacman -S terminator");
-            system ("yay -S spotify");
-            system ("yay -S chrome");
-            system ("yay -S vscode");
-            system ("yay -S steam");
-            system ("yay -S lutris");
-            system ("yay -S brave");
-            system ("sudo pacman -S vlc");
-        }
-        else
-        {
-            printf("oops wrong choice");
-        }
-    }
-    else if (l == 3)
-    {
-        //prerequisites
-        printf ("Please wait while we check if we can install programs on this system. Enter your password if prompted\n");
-        system ("sudo dnf install flatpak");
-        if (lp == 1)
-        {
-            //Firefox
-            printf("Installing Firefox, please enter your password if prompted\n");
-            system ("sudo dnf install firefox");
-        }
-        else if (lp == 2)
-        {
-            //Neofetch
-            printf("Installing Neofetch, please enter your password if prompted\n");
-            system ("sudo dnf install neofetch");
-        }
-        else if (lp == 3)
-        {
-            //terminator
-            printf("Installing teminator, please enter your password if prompted\n");
-            system ("sudo dnf install terminator");
-        }
-        else if (lp == 4)
-        {
-            //spotify
-            printf("Installing spotify, please enter your password if prompted\n");
-            system ("flatpak install com.spotify.Client");
-        }
-        else if (lp == 5)
-        {
-            //chrome
-            printf("Installing chrome, please enter your password if prompted\n");
-            system ("flatpak install com.google.Chrome");
-        }
-        else if (lp == 6)
-        {
-            //vscode
-            printf("Installing vscode, please enter your password if prompted\n");
-            system ("flatpak install com.visualstudio.code");
-        }
-        else if (lp == 7)
-        {
-            //steam
-            printf("Installing Steam, please enter your passowrd if prompted\n");
-            system ("sudo dnf install steam");
-        }
-        else if (lp == 8)
-        {
-            //lutris
-            printf("Installing Lutris, please enter your passowrd if prompted\n");
-            system ("sudo dnf install lutris");
-        }
-        else if (lp == 9)
-        {
-            //brave
-            printf("Installing Brave browser, please enter your passowrd if prompted\n");
-            system ("flatpak install com.brave.Browser");
-        }
-        else if (lp == 10)
-        {
-            //VLC Media player
-            printf("Installing VLC Media Player, please enter your passowrd if prompted\n");
-            system ("sudo dnf install vlc");
-        }
-        else if (lp == 11)
-        {
-            char s[20],p[20];
-            strcat(s,"sudo dnf install");
-            strcat(s," ");
-            printf("Enter the name of the program you want to install: ");
-            scanf("%s",p);
-            strcat(s,p);
-            system (s);
-        }
-        else if (lp == 0)
-        {
-            //All of the above
-            printf("Installing all programs mentioned above (This may take some time), please enter your password if prompted\n");
-            system ("sudo dnf install firefox");
-            system ("sudo dnf install neofetch");
-            system ("sudo dnf install terminator");
-            system ("flatpak install com.spotify.Client");
-            system ("flatpak install com.google.Chrome");
-            system ("flatpak install com.visualstudio.code");
-            system ("sudo dnf install steam");
-            system ("sudo dnf install lutris");
-            system ("flatpak install com.brave.Browser");
-            system ("sudo dnf install vlc");
-        }
-        else
-        {
-            printf("oops wrong choice");
-        }
-    }
-    else
-    {
-        printf ("sorry wrong Choice");
+
+    cout << "\nWhich program do you want to install?\n\n";
+    cout << "1. Firefox\n";
+    cout << "2. Neofetch\n";
+    cout << "3. Terminator\n";
+    cout << "4. Spotify\n";
+    cout << "5. Chrome\n";
+    cout << "6. VSCode\n";
+    cout << "7. Steam\n";
+    cout << "8. Lutris\n";
+    cout << "9. Brave\n";
+    cout << "10. VLC Media Player\n";
+    cout << "11. Custom (Enter name of the program)\n";
+    cout << "0. All of the above\n\n";
+    cout << "Enter your choice (Number only): ";
+    cin >> lp;
+
+    string package_manager;
+    if (l == 1) package_manager = "apt";
+    else if (l == 2) package_manager = "pacman -S";
+    else if (l == 3) package_manager = "dnf";
+
+    switch (lp) {
+        case 1: install_program("", package_manager, "firefox"); break;
+        case 2: install_program("", package_manager, "neofetch"); break;
+        case 3: install_program("", package_manager, "terminator"); break;
+        case 4: 
+            if (l == 1) {
+                system("sudo apt install snap && sudo snap install spotify");
+            } else if (l == 2) {
+                system("yay -S spotify");
+            } else if (l == 3) {
+                system("flatpak install com.spotify.Client");
+            }
+            break;
+        case 5: 
+            if (l == 1) {
+                system("sudo apt install snap && sudo snap install chrome");
+            } else if (l == 2) {
+                system("yay -S google-chrome");
+            } else if (l == 3) {
+                system("flatpak install com.google.Chrome");
+            }
+            break;
+        case 6: 
+            if (l == 1) {
+                system("wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg");
+                system("sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/");
+                system("sudo sh -c 'echo \"deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main\" > /etc/apt/sources.list.d/vscode.list'");
+                system("rm -f packages.microsoft.gpg");
+                system("sudo apt install apt-transport-https && sudo apt update && sudo apt install code");
+            } else if (l == 2) {
+                system("yay -S visual-studio-code-bin");
+            } else if (l == 3) {
+                system("flatpak install com.visualstudio.code");
+            }
+            break;
+        case 7: install_program("", package_manager, "steam"); break;
+        case 8: install_program("", package_manager, "lutris"); break;
+        case 9: 
+            if (l == 1) {
+                system("sudo apt install apt-transport-https curl");
+                system("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
+                system("echo \"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main\" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
+                system("sudo apt update");
+                system("sudo apt install brave-browser");
+            } else if (l == 2) {
+                system("yay -S brave-bin");
+            } else if (l == 3) {
+                system("flatpak install com.brave.Browser");
+            }
+            break;
+        case 10: install_program("", package_manager, "vlc"); break;
+        case 11: install_custom_program(package_manager); break;
+        case 0: 
+            install_program("", package_manager, "firefox");
+            install_program("", package_manager, "neofetch");
+            install_program("", package_manager, "terminator");
+            if (l == 1) {
+                system("sudo apt install snap && sudo snap install spotify");
+                system("sudo apt install snap && sudo snap install chrome");
+            } else if (l == 2) {
+                system("yay -S spotify");
+                system("yay -S google-chrome");
+            } else if (l == 3) {
+                system("flatpak install com.spotify.Client");
+                system("flatpak install com.google.Chrome");
+            }
+            if (l == 1) {
+                system("wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg");
+                system("sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/");
+                system("sudo sh -c 'echo \"deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main\" > /etc/apt/sources.list.d/vscode.list'");
+                system("rm -f packages.microsoft.gpg");
+                system("sudo apt install apt-transport-https && sudo apt update && sudo apt install code");
+            } else if (l == 2) {
+                system("yay -S visual-studio-code-bin");
+            } else if (l == 3) {
+                system("flatpak install com.visualstudio.code");
+            }
+            install_program("", package_manager, "steam");
+            install_program("", package_manager, "lutris");
+            if (l == 1) {
+                system("sudo apt install apt-transport-https curl");
+                system("sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg");
+                system("echo \"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main\" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list");
+                system("sudo apt update");
+                system("sudo apt install brave-browser");
+            } else if (l == 2) {
+                system("yay -S brave-bin");
+            } else if (l == 3) {
+                system("flatpak install com.brave.Browser");
+            }
+            install_program("", package_manager, "vlc");
+            break;
+        default: cout << "Sorry, wrong input\n"; break;
     }
     return 0;
 }
-int Windows()
-{
-        system ("color 3");
-        int w,wp;
-        printf ("We've detected that you're using Windows. Could you please specify the version of windows that you are using ? \n\n");
-        printf ("1. windows 10\n");
-        printf ("2. Windows 10 with Winget\n");
-        printf ("3. Windows 11\n");
-        printf ("\nTip: if you don't know if you have winget installed or not, launch a cmd instance and type 'winget --help'. If you see errors, then winget is not installed.\n");
-        scanf("%d",&w);
-        printf("Which program do you wanna install ? \n");
-        printf("1. Firefox\n");
-        printf("2. notepad++\n");
-        printf("3. vscode\n");
-        printf("4. spotify\n");
-        printf("5. chrome\n");
-        printf("6. Discord\n");
-        printf("7. steam\n");
-        printf("8. Epic Games Launcher\n");
-        printf("9. OBS Studio\n");
-        printf("10. Brave\n");
-        printf("11. VLC Media Player\n");
-        printf("12. Adobe Acrobat Reader\n");
-        printf("13. Something Else (Custom)\n");
-        printf("0. All of the above\n");
-        scanf("%d",&wp);
-        if (w == 1)
-        {
-            printf("sorry our program doesn't work without winget yet. Please install winget by updating App Installer or upgrade to Windows 11 if possible :)");
-        }
-        else if (w == 2 || w == 3)
-        {
-            if (wp == 1)
-            {
-                //Firefox
-                printf("Installing Firefox, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Mozilla.Firefox -e");
-            }
-            else if (wp == 2)
-            {
-                //notepad++
-                printf("Installing Notepad++, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Notepad++.Notepad++ -e");
-            }
-            else if (wp == 3)
-            {
-                //vscode
-                printf("Installing vscode, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Microsoft.VisualStudioCode -e");
-            }
-            else if (wp == 4)
-            {
-                //spotify
-                printf("Installing spotify, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Spotify.Spotify -e");
-            }
-            else if (wp == 5)
-            {
-                //chrome
-                printf("Installing chrome, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Google.Chrome -e");
-            }
-            else if (wp == 6)
-            {
-                //discord
-                printf("Installing Discord, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Discord.Discord -e");
-            }
-            else if (wp == 7)
-            {
-                //steam
-                printf("Installing Steam, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Valve.Steam -e");
-            }
-            else if (wp == 8)
-            {
-                //Epic games Launcher
-                printf("Installing Epic games Launcher, please enter your password if prompted\n");
-                system ("start powershell.exe winget install EpicGames.EpicGamesLauncher -e");
-            }
-            else if (wp == 9)
-            {
-                //OBS Studio
-                printf("Installing OBS Studio, please enter your password if prompted\n");
-                system ("start powershell.exe winget install OBSProject.OBSStudio -e");
-            }
-            else if (wp == 10)
-            {
-                //Brave Browser
-                printf("Installing Brave browser, please enter your password if prompted\n");
-                system ("start powershell.exe winget install BraveSoftware.BraveBrowser -e");
-            }
-            else if (wp == 11)
-            {
-                //VLC Media Player
-                printf("Installing VLC Media Player, please enter your password if prompted\n");
-                system ("start powershell.exe winget install VideoLAN.VLC -e");
-            }
-            else if (wp == 12)
-            {
-                //Adobe Acrobat Reader
-                printf("Installing Adobe Acrobat Reader DC, please enter your password if prompted\n");
-                system ("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
-            }
-            else if (wp == 13)
-            {
-                char s[50],p[50];
-                strcat(s,"start powershell.exe winget install");
-                strcat(s," ");
-                printf("Enter the name of the program you want to install: ");
-                scanf("%s",p);
-                strcat(s,p);
-                system (s);
-            }
-            else if (wp == 0)
-            {
-                //All of the above
-                printf("Installing All of the above programs (this may take some time), please enter your password if prompted\n");
-                system ("start powershell.exe winget install Mozilla.Firefox -e");
-                system ("start powershell.exe winget install Notepad++.Notepad++ -e");
-                system ("start powershell.exe winget install Microsoft.VisualStudioCode -e");
-                system ("start powershell.exe winget install Spotify.Spotify -e");
-                system ("start powershell.exe winget install Google.Chrome -e");
-                system ("start powershell.exe winget install Discord.Discord -e");
-                system ("start powershell.exe winget install Valve.Steam -e");
-                system ("start powershell.exe winget install EpicGames.EpicGamesLauncher -e");
-                system ("start powershell.exe winget install OBSProject.OBSStudio -e");
-                system ("start powershell.exe winget install BraveSoftware.BraveBrowser -e");
-                system ("start powershell.exe winget install VideoLAN.VLC -e");
-                system ("start powershell.exe winget install Adobe.Acrobat.Reader.64-bit -e");
-            }
-            else
-            {
-                printf("oops wrong choice");
-            }
-        }
-        else
-        {
-            printf("Oops sorry, wrong choice");
-        }
-    return 0;
-}
-int updatel()
-{
-    int l;
-    printf("We've detected that you are using Linux, could you please specify which Distribution of Linux you are using ?\n\n");
-    printf("1. Debian (Ubuntu, PopOs, Mint, ZorinOS)\n");
-    printf("2. Arch Linux (Manjaro, Garuda)\n");
-    printf("3. Fedora\n\n");
-    scanf ("%d",&l);
-    if (l == 1)
-    {
-        printf("Updating your system, You may be prompted to type in your password");
-        system("sudo apt-get update && sudo apt upgrade -yy");
+
+int Windows() {
+    system("color 3");
+    int w, wp;
+    cout << "We've detected that you're using Windows. Could you please specify the version of Windows that you are using?\n\n";
+    cout << "1. Windows 10\n";
+    cout << "2. Windows 10 with Winget\n";
+    cout << "3. Windows 11\n";
+    cout << "\nTip: if you don't know if you have winget installed or not, launch a cmd instance and type 'winget --help'. If you see errors, then winget is not installed.\n";
+    cin >> w;
+
+    if (w < 1 || w > 3) {
+        cout << "Sorry, wrong choice\n";
+        return 1;
     }
-    if (l == 2)
-    {
-        printf("Updating your system, You may be prompted to type in your password");
-        system("yay -Syu");
+
+    cout << "\nWhich program do you want to install?\n\n";
+    cout << "1. Firefox\n";
+    cout << "2. Neofetch\n";
+    cout << "3. Terminator\n";
+    cout << "4. Spotify\n";
+    cout << "5. Chrome\n";
+    cout << "6. VSCode\n";
+    cout << "7. Steam\n";
+    cout << "8. Lutris\n";
+    cout << "9. Brave\n";
+    cout << "10. VLC Media Player\n";
+    cout << "11. Custom (Enter name of the program)\n";
+    cout << "0. All of the above\n\n";
+    cout << "Enter your choice (Number only): ";
+    cin >> wp;
+
+    if (w == 1) {
+        cout << "You need to install winget for this script to work. Install it from here: https://github.com/microsoft/winget-cli/releases\n";
+        return 1;
     }
-    if (l == 3)
-    {
-        printf("Updating your system, You may be prompted to type in your password");
-        system("sudo dnf update -yy");
-    }
-    return 0;
-}
-int updatew()
-{
-    printf("Updating your system, You may be prompted to type in your password");
-    system("winget upgrade --all");
-    return 0;
-}
-int main()
-{
-    printf ("Hello welcome to osfm, a program made by Rishi Space\n");
-    while (true)
-    {
-        //Determine the OS
-        int i,os;
-        #ifdef linux
-        {
-            os = 1;
-        }
-        #else
-        {
-            os = 2;
-        }
-        #endif
-        printf("\n1.Install Programs\n");
-        printf("2. Update all Apps\n");
-        printf("0. Exit Program\n\n");
-        printf("enter the feature you wanna use: ");
-        scanf("%d",&i);
-        if (i == 1) 
-        {
-            //Install Apps
-            if (os == 1)
-            {
-                Linux();
-            }
-            if (os == 2)
-            {
-                Windows();
-            }
-        }
-        else if (i == 2)
-        {
-            //Update Apps
-            if (os == 1)
-            {
-                updatel();
-            }
-            if (os == 2)
-            {
-                updatew();
-            }
-        }
-        else if (i == 0)
-        {
-            // Quit Program
-            printf("\n");
-            exit (0);
+
+    string command = "winget install --id=";
+    switch (wp) {
+        case 1: system((command + "Mozilla.Firefox").c_str()); break;
+        case 2: cout << "Neofetch is not available on Windows\n"; break;
+        case 3: cout << "Terminator is not available on Windows\n"; break;
+        case 4: system((command + "Spotify.Spotify").c_str()); break;
+        case 5: system((command + "Google.Chrome").c_str()); break;
+        case 6: system((command + "Microsoft.VisualStudioCode").c_str()); break;
+        case 7: system((command + "Valve.Steam").c_str()); break;
+        case 8: cout << "Lutris is not available on Windows\n"; break;
+        case 9: system((command + "Brave.Brave").c_str()); break;
+        case 10: system((command + "VideoLAN.VLC").c_str()); break;
+        case 11: {
+            string program;
+            cout << "Enter the name of the program you want to install: ";
+            cin >> program;
+            system(("winget install --id=" + program).c_str());
             break;
         }
-        else
-        {
-            // Try Again
-            printf("Oops Wrong choice, try again");
+        case 0: {
+            system((command + "Mozilla.Firefox").c_str());
+            system((command + "Spotify.Spotify").c_str());
+            system((command + "Google.Chrome").c_str());
+            system((command + "Microsoft.VisualStudioCode").c_str());
+            system((command + "Valve.Steam").c_str());
+            system((command + "Brave.Brave").c_str());
+            system((command + "VideoLAN.VLC").c_str());
+            break;
         }
+        default: cout << "Sorry, wrong input\n"; break;
     }
+    return 0;
+}
+
+int main() {
+    int i,os;
+    #ifdef linux
+    {
+        os = 1;
+    }
+    #else
+    {
+        os = 2;
+    }
+    #endif
+
+    if (OS == "Linux" || OS == "linux") {
+        Linux();
+    } else if (OS == "Windows" || OS == "windows") {
+        Windows();
+    } else {
+        cout << "Sorry, wrong choice\n";
+    }
+
     return 0;
 }
