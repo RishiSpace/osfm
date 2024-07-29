@@ -1,8 +1,8 @@
+import subprocess
 import socket
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
-import subprocess
 import os
 import shutil
 
@@ -139,7 +139,7 @@ class Server(QtWidgets.QMainWindow):
             item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             item.setData(QtCore.Qt.UserRole, hostname)
         self.clients_list.itemDoubleClicked.connect(self.rdp_to_client)
-    
+
     def rdp_to_client(self, item):
         hostname = item.data(QtCore.Qt.UserRole)
         print(f"Initiating RDP to {hostname}")
@@ -151,18 +151,53 @@ class Server(QtWidgets.QMainWindow):
 
         result = subprocess.run(["winget", "search", search_term,"--source", "winget"], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
-            lines = result.stdout.splitlines()
-            self.software_options = {}
-            for line in lines:
-                if line.strip() and not line.startswith("Name"):
-                    columns = line.split(None, 2)
-                    if len(columns) >= 2:
-                        software_name = columns[1].strip()
-                        software_id = columns[0]
-                        self.software_options[software_name] = software_id
+            self.software_options = self.parse_winget_output(result.stdout)
             self.display_software_options()
         else:
             print(f"Failed to search for {search_term}: {result.stderr}")
+
+    def parse_winget_output(self, output):
+        lines = output.strip().split('\n')
+        software_options = {}
+
+        for i, line in enumerate(lines):
+            if set(line.strip()) == {'-'} and i > 0 and set(lines[i - 1].strip()) != {'-'}:
+                header_index = i - 1
+                break
+
+        if header_index is None:
+            return software_options
+
+        header_line = lines[header_index]
+        name_pos = header_line.index('Name')
+        id_pos = header_line.index('Id')
+        version_pos = header_line.index('Version')
+        match_pos = header_line.index('Match') if 'Match' in header_line else None
+        source_pos = header_line.index('Source') if 'Source' in header_line else None
+
+        for line in lines[header_index + 2:]:
+            if source_pos:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:match_pos].strip() if match_pos else line[version_pos:source_pos].strip()
+                match = line[match_pos:source_pos].strip() if match_pos else ''
+                source = line[source_pos:].strip()
+            elif match_pos:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:match_pos].strip()
+                match = line[match_pos:].strip()
+                source = ''
+            else:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:].strip()
+                match = ''
+                source = ''
+
+            software_options[name] = id_
+
+        return software_options
 
     def display_software_options(self):
         self.software_buttons_frame.clear()
@@ -182,7 +217,6 @@ class Server(QtWidgets.QMainWindow):
     def install_selected_software(self):
         for name in self.selected_software:
             pkg_id = self.software_options[name]
-            
             self.download_software(pkg_id)
 
         self.send_downloaded_software()
@@ -191,7 +225,7 @@ class Server(QtWidgets.QMainWindow):
     def download_software(self, pkg_id):
         try:
             print(f"Downloading software: {pkg_id}")
-            result = subprocess.run(["winget", "download", "--id", pkg_id, "-d","/temp/"], capture_output=True, text=True, encoding='utf-8')
+            result = subprocess.run(["winget", "download", "--id", pkg_id, "-d","temp"], capture_output=True, text=True, encoding='utf-8')
             if result.returncode != 0:
                 print(f"Failed to download {pkg_id}: {result.stderr}")
             else:
@@ -217,9 +251,14 @@ class Server(QtWidgets.QMainWindow):
                 print(f"Failed to send software to client: {e}")
 
     def find_downloaded_file(self, pkg_id):
-        for file in os.listdir("/temp/"):
+        for file in os.listdir("temp"):
             if file.startswith(pkg_id):
-                return os.path.join("/temp/", file)
+                downloaded_file_path = os.path.join("temp", file)
+                renamed_file_path = os.path.join("temp", f"{pkg_id}.exe")
+                if os.path.exists(renamed_file_path):
+                    os.remove(renamed_file_path)
+                os.rename(downloaded_file_path, renamed_file_path)
+                return renamed_file_path
         return None
 
     def create_install_software_gui(self):
@@ -252,7 +291,7 @@ class Server(QtWidgets.QMainWindow):
         install_gui.exec_()
 
 if __name__ == "__main__":
-    
+
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
 
