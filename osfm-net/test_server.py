@@ -246,8 +246,6 @@ class Server(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
 
-    QtCore.qRegisterMetaType(QtCore.QVector[int], 'QVector<int>')
-
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
 
