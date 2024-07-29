@@ -4,6 +4,10 @@ import getpass
 import time
 import os
 
+#Software Version
+SoftWare_Version = "V1.03 (Net)"
+
+
 def discover_server(port=12345):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

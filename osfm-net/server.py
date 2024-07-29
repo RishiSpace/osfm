@@ -5,6 +5,27 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
 import os
 import shutil
+import requests
+
+
+#Software Version
+SoftWare_Version = "V1.03 (Net)"
+
+def check_for_updates():
+    try:
+        response = requests.get("https://github.com/RishiSpace/osfm/releases")
+        if response.status_code == 200:
+            latest_version = response.text.split('V')[1].split(' ')[0]
+            if "(Net)" in latest_version and latest_version != SoftWare_Version.split(' ')[0]:
+                print(f"New version {latest_version} available. Updating...")
+                # Add logic to update the software and clients here
+            else:
+                print("No new version available.")
+        else:
+            print("Failed to check for updates.")
+    except requests.RequestException as e:
+        print(f"Error checking for updates: {e}")
+
 
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
