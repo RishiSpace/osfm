@@ -1,10 +1,10 @@
+import subprocess
 import socket
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
-
 import threading
-import subprocess
 import os
+import shutil
 
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
@@ -16,8 +16,8 @@ class Server(QtWidgets.QMainWindow):
         self.server_socket.listen(5)
         self.connections = {}
         self.setup_ui()
-        self.start_udp_listener()  # Start the UDP listener for client discovery
-        self.start_tcp_server()  # Start the TCP server
+        self.start_udp_listener()  
+        self.start_tcp_server()  
 
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
@@ -151,18 +151,53 @@ class Server(QtWidgets.QMainWindow):
 
         result = subprocess.run(["winget", "search", search_term,"--source", "winget"], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
-            lines = result.stdout.splitlines()
-            self.software_options = {}
-            for line in lines:
-                if line.strip() and not line.startswith("Name"):
-                    columns = line.split(None, 2)
-                    if len(columns) >= 2:
-                        software_name = columns[1].strip()
-                        software_id = columns[0]
-                        self.software_options[software_name] = software_id
+            self.software_options = self.parse_winget_output(result.stdout)
             self.display_software_options()
         else:
             print(f"Failed to search for {search_term}: {result.stderr}")
+
+    def parse_winget_output(self, output):
+        lines = output.strip().split('\n')
+        software_options = {}
+
+        for i, line in enumerate(lines):
+            if set(line.strip()) == {'-'} and i > 0 and set(lines[i - 1].strip()) != {'-'}:
+                header_index = i - 1
+                break
+
+        if header_index is None:
+            return software_options
+
+        header_line = lines[header_index]
+        name_pos = header_line.index('Name')
+        id_pos = header_line.index('Id')
+        version_pos = header_line.index('Version')
+        match_pos = header_line.index('Match') if 'Match' in header_line else None
+        source_pos = header_line.index('Source') if 'Source' in header_line else None
+
+        for line in lines[header_index + 2:]:
+            if source_pos:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:match_pos].strip() if match_pos else line[version_pos:source_pos].strip()
+                match = line[match_pos:source_pos].strip() if match_pos else ''
+                source = line[source_pos:].strip()
+            elif match_pos:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:match_pos].strip()
+                match = line[match_pos:].strip()
+                source = ''
+            else:
+                name = line[name_pos:id_pos].strip()
+                id_ = line[id_pos:version_pos].strip()
+                version = line[version_pos:].strip()
+                match = ''
+                source = ''
+
+            software_options[name] = id_
+
+        return software_options
 
     def display_software_options(self):
         self.software_buttons_frame.clear()
@@ -190,11 +225,15 @@ class Server(QtWidgets.QMainWindow):
     def download_software(self, pkg_id):
         try:
             print(f"Downloading software: {pkg_id}")
-            result = subprocess.run(["winget", "download", "--id", pkg_id, "-d","/temp/"], capture_output=True, text=True, encoding='utf-8')
+            result = subprocess.run(["winget", "download", "--id", pkg_id, "-d","temp"], capture_output=True, text=True, encoding='utf-8')
             if result.returncode != 0:
                 print(f"Failed to download {pkg_id}: {result.stderr}")
             else:
                 print(f"Successfully downloaded {pkg_id}")
+                # Rename the downloaded file to have the same name as the package ID
+                for file in os.listdir("temp"):
+                    if file.startswith(pkg_id):
+                        os.rename(os.path.join("temp", file), os.path.join("temp", f"{pkg_id}.exe"))
         except Exception as e:
             print(f"Error downloading software {pkg_id}: {e}")
 
@@ -214,6 +253,12 @@ class Server(QtWidgets.QMainWindow):
                         print(f"Could not find downloaded file for {pkg_id}")
             except Exception as e:
                 print(f"Failed to send software to client: {e}")
+    
+    def find_downloaded_file(self, pkg_name):
+        for file in os.listdir("temp"):
+            if file.startswith(pkg_name):
+                return os.path.join("temp", file)
+        return None
 
     def create_install_software_gui(self):
         install_gui = QtWidgets.QDialog(self)
@@ -249,25 +294,23 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
 
-    # Windows Mica dark mode palette
     palette = QtGui.QPalette()
-    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(15, 15, 15))  # Background color
-    palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)  # Text color
-    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(25, 25, 25))  # Base color
-    palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))  # Alternate base color
-    palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)  # Tooltip base color
-    palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)  # Tooltip text color
-    palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)  # Text color
-    palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))  # Button color
-    palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)  # Button text color
-    palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)  # Bright text color
-    palette.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))  # Link color
-    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))  # Highlight color
-    palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)  # Highlighted text color
+    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(15, 15, 15))  
+    palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)  
+    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(25,25,25))
+    palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))  
+    palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)  
+    palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)  
+    palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)  
+    palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))  
+    palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)  
+    palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)  
+    palette.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))  
+    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))  
+    palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)  
 
     app.setPalette(palette)
 
-    # Set stylesheet for buttons and other widgets
     app.setStyleSheet("""
         QPushButton {
             background-color: #333333;

