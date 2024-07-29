@@ -219,9 +219,16 @@ int Windows() {
 }
 
 int main() {
-    string OS;
-    cout << "Enter the Operating System you are using (Linux/Windows): ";
-    cin >> OS;
+    int i,os;
+    #ifdef linux
+    {
+        os = 1;
+    }
+    #else
+    {
+        os = 2;
+    }
+    #endif
 
     if (OS == "Linux" || OS == "linux") {
         Linux();
