@@ -182,6 +182,7 @@ class Server(QtWidgets.QMainWindow):
 
     def rdp_to_client(self, item):
         hostname = item.data(QtCore.Qt.UserRole)  # Retrieve the full hostname from the item data
+        hostname = hostname.replace("HOSTNAME ", "")
         print(f"Initiating RDP to {hostname}")
         os.system(f'mstsc /v:{hostname}')
 

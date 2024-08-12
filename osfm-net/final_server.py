@@ -168,6 +168,7 @@ class Server(QtWidgets.QMainWindow):
     def update_clients_list(self):
         self.clients_list.clear()
         for hostname in self.connections.keys():
+            hostname = hostname.replace("HOSTNAME ", "")
             item = QtWidgets.QListWidgetItem(hostname)
             self.clients_list.addItem(item)
             item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
@@ -176,6 +177,7 @@ class Server(QtWidgets.QMainWindow):
 
     def rdp_to_client(self, item):
         hostname = item.data(QtCore.Qt.UserRole)
+        hostname = hostname.replace("HOSTNAME ", "")
         print(f"Initiating RDP to {hostname}")
         os.system(f'mstsc /v:{hostname}')
 
