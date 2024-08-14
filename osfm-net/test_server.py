@@ -8,7 +8,7 @@ import os
 host = subprocess.getoutput("hostname")  # Correctly fetch hostname
 
 class Server(QtWidgets.QMainWindow):
-    
+
     def __init__(self, host="0.0.0.0", port=12345):
         super().__init__()
         self.server_ip = host
@@ -17,7 +17,7 @@ class Server(QtWidgets.QMainWindow):
         self.server_socket.bind((self.server_ip, self.server_port))
         self.server_socket.listen(5)
         self.connections = {}
-        self.temp_dir = rf"\\{host}\temp"  # Network share path with actual hostname
+        self.network_share_path = r"\\NETWORK_SHARE\path\to\folder"  # Ensure this path is accessible
         self.setup_ui()
         self.start_udp_listener()
         self.start_tcp_server()
@@ -37,12 +37,8 @@ class Server(QtWidgets.QMainWindow):
         self.install_button.clicked.connect(self.create_install_software_gui)
         button_layout.addWidget(self.install_button)
 
-        self.pip_button = QtWidgets.QPushButton("Pip Install", self)
-        self.pip_button.clicked.connect(self.create_pip_install_gui)
-        button_layout.addWidget(self.pip_button)
-
         self.uninstall_button = QtWidgets.QPushButton("Uninstall Software", self)
-        self.uninstall_button.clicked.connect(self.uninstall_software)
+        self.uninstall_button.clicked.connect(self.create_uninstall_software_gui)
         button_layout.addWidget(self.uninstall_button)
 
         self.fix_button = QtWidgets.QPushButton("Fix Windows", self)
@@ -100,7 +96,6 @@ class Server(QtWidgets.QMainWindow):
                 hostname = client_socket.recv(1024).decode()
                 self.connections[hostname] = client_socket
                 print(f"Client {hostname} ({address}) connected")
-                self.send_command(host)
                 self.update_clients_list()
                 threading.Thread(target=self.handle_client, args=(client_socket, hostname), daemon=True).start()
             except Exception as e:
@@ -118,6 +113,9 @@ class Server(QtWidgets.QMainWindow):
                 elif data.startswith(b"FILE_PATH"):
                     file_path = data.decode().split(" ", 1)[1]
                     self.handle_file_path(file_path)
+                elif data.startswith(b"UNINSTALL"):
+                    software_id = data.decode().split(" ", 1)[1]
+                    self.uninstall_software(software_id)
             except Exception as e:
                 print(f"Client connection error: {e}")
                 break
@@ -129,10 +127,10 @@ class Server(QtWidgets.QMainWindow):
     def receive_file(self, client_socket):
         try:
             file_name = client_socket.recv(1024).decode()
-            file_path = os.path.join(self.temp_dir, file_name)
+            file_path = os.path.join(self.network_share_path, file_name)
 
-            if not os.path.exists(self.temp_dir):
-                os.makedirs(self.temp_dir)
+            if not os.path.exists(self.network_share_path):
+                os.makedirs(self.network_share_path)
 
             with open(file_path, "wb") as f:
                 while True:
@@ -156,11 +154,8 @@ class Server(QtWidgets.QMainWindow):
             except Exception as e:
                 print(f"Failed to send command: {e}")
 
-    def install_software(self):
-        self.send_command("INSTALL")
-
-    def uninstall_software(self):
-        self.send_command("UNINSTALL")
+    def uninstall_software(self, software_id):
+        self.send_command(f"UNINSTALL {software_id}")
 
     def fix_windows(self):
         self.send_command("FIX_WINDOWS")
@@ -172,142 +167,71 @@ class Server(QtWidgets.QMainWindow):
     def update_clients_list(self):
         self.clients_list.clear()
         for hostname in self.connections.keys():
-            # Clean the hostname for display (e.g., removing "HOSTNAME " or truncating)
-            display_name = hostname.replace("HOSTNAME ", "")  # Modify based on your actual needs
-            item = QtWidgets.QListWidgetItem(display_name)
+            hostname = hostname.replace("HOSTNAME ", "")
+            item = QtWidgets.QListWidgetItem(hostname)
             self.clients_list.addItem(item)
             item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            item.setData(QtCore.Qt.UserRole, hostname) 
+            item.setData(QtCore.Qt.UserRole, hostname)
         self.clients_list.itemDoubleClicked.connect(self.rdp_to_client)
 
     def rdp_to_client(self, item):
-        hostname = item.data(QtCore.Qt.UserRole)  # Retrieve the full hostname from the item data
+        hostname = item.data(QtCore.Qt.UserRole)
         hostname = hostname.replace("HOSTNAME ", "")
         print(f"Initiating RDP to {hostname}")
         os.system(f'mstsc /v:{hostname}')
 
-    def search_software(self, search_term):
-        if not search_term:
-            return
-
-        result = subprocess.run(["winget", "search", search_term, "--source", "winget"], capture_output=True, text=True, encoding='utf-8')
-        if result.returncode == 0:
-            self.software_options = self.parse_winget_output(result.stdout)
-            self.display_software_options()
-        else:
-            print(f"Failed to search for {search_term}: {result.stderr}")
-
-    def parse_winget_output(self, output):
-        lines = output.strip().split('\n')
-        software_options = {}
-
-        header_index = next((i for i, line in enumerate(lines) if 'Name' in line), None)
-        if header_index is None:
-            return software_options
-
-        header_line = lines[header_index]
-        name_pos = header_line.index('Name')
-        id_pos = header_line.index('Id')
-        version_pos = header_line.index('Version')
-        match_pos = header_line.index('Match') if 'Match' in header_line else None
-        source_pos = header_line.index('Source') if 'Source' in header_line else None
-
-        for line in lines[header_index + 2:]:
-            if source_pos:
-                name = line[name_pos:id_pos].strip()
-                id_ = line[id_pos:version_pos].strip()
-                version = line[version_pos:match_pos].strip() if match_pos else line[version_pos:source_pos].strip()
-                match = line[match_pos:source_pos].strip() if match_pos else ''
-                source = line[source_pos:].strip()
-            elif match_pos:
-                name = line[name_pos:id_pos].strip()
-                id_ = line[id_pos:version_pos].strip()
-                version = line[version_pos:match_pos].strip()
-                match = line[match_pos:].strip()
-                source = ''
-            else:
-                name = line[name_pos:id_pos].strip()
-                id_ = line[id_pos:version_pos].strip()
-                version = line[version_pos:].strip()
-                match = ''
-                source = ''
-
-            software_options[name] = id_
-
-        return software_options
-
-    def display_software_options(self):
-        self.software_buttons_frame.clear()
-        for name in self.software_options.keys():
-            item = QtWidgets.QListWidgetItem(name)
-            self.software_buttons_frame.addItem(item)
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            item.setData(QtCore.Qt.UserRole, name)
-
-    def toggle_selection(self, item):
-        name = item.data(QtCore.Qt.UserRole)
-        if name in self.selected_software:
-            self.selected_software.remove(name)
-            item.setBackground(QtGui.QColor("white"))
-        else:
-            self.selected_software.add(name)
-            item.setBackground(QtGui.QColor("lightblue"))
-
     def create_install_software_gui(self):
-        self.install_software_window = QtWidgets.QWidget()
-        self.install_software_window.setWindowTitle("Install Software")
-        self.install_software_window.setGeometry(200, 200, 400, 300)
-        layout = QtWidgets.QVBoxLayout(self.install_software_window)
+        install_gui = QtWidgets.QDialog(self)
+        install_gui.setWindowTitle("Install Software")
+        install_gui.setGeometry(100, 100, 800, 600)
 
-        self.software_search_input = QtWidgets.QLineEdit(self.install_software_window)
-        self.software_search_input.setPlaceholderText("Search for software...")
-        layout.addWidget(self.software_search_input)
+        layout = QtWidgets.QVBoxLayout(install_gui)
 
-        self.software_search_button = QtWidgets.QPushButton("Search", self.install_software_window)
-        self.software_search_button.clicked.connect(self.search_software)
-        layout.addWidget(self.software_search_button)
+        search_layout = QtWidgets.QHBoxLayout()
+        self.search_entry = QtWidgets.QLineEdit(install_gui)
+        self.search_entry.setPlaceholderText("Search for software")
+        search_layout.addWidget(self.search_entry)
 
-        self.software_buttons_frame = QtWidgets.QListWidget(self.install_software_window)
+        search_button = QtWidgets.QPushButton("Search", install_gui)
+        search_button.clicked.connect(lambda: self.search_software(self.search_entry.text()))
+        search_layout.addWidget(search_button)
+        layout.addLayout(search_layout)
+
+        self.software_buttons_frame = QtWidgets.QListWidget(install_gui)
         self.software_buttons_frame.itemClicked.connect(self.toggle_selection)
         layout.addWidget(self.software_buttons_frame)
 
-        self.install_button = QtWidgets.QPushButton("Install Selected Software", self.install_software_window)
-        self.install_button.clicked.connect(self.install_selected_software)
-        layout.addWidget(self.install_button)
+        install_button = QtWidgets.QPushButton("Install Selected", install_gui)
+        install_button.clicked.connect(self.install_selected_software)
+        layout.addWidget(install_button)
 
-        self.install_software_window.show()
+        self.selected_software = set()
 
-    def install_selected_software(self):
-        for name in self.selected_software:
-            package_id = self.software_options.get(name)
-            if package_id:
-                self.send_command(f"INSTALL {package_id}")
+        install_gui.exec_()
 
-    def create_pip_install_gui(self):
-        self.pip_install_window = QtWidgets.QWidget()
-        self.pip_install_window.setWindowTitle("Pip Install")
-        self.pip_install_window.setGeometry(200, 200, 400, 200)
-        layout = QtWidgets.QVBoxLayout(self.pip_install_window)
+    def create_uninstall_software_gui(self):
+        uninstall_gui = QtWidgets.QDialog(self)
+        uninstall_gui.setWindowTitle("Uninstall Software")
+        uninstall_gui.setGeometry(100, 100, 800, 600)
 
-        self.package_path_entry = QtWidgets.QLineEdit(self.pip_install_window)
-        self.package_path_entry.setPlaceholderText("Enter package path or name...")
-        layout.addWidget(self.package_path_entry)
+        layout = QtWidgets.QVBoxLayout(uninstall_gui)
 
-        self.install_pip_button = QtWidgets.QPushButton("Install Package", self.pip_install_window)
-        self.install_pip_button.clicked.connect(self.install_python_package)
-        layout.addWidget(self.install_pip_button)
+        self.uninstall_entry = QtWidgets.QLineEdit(uninstall_gui)
+        self.uninstall_entry.setPlaceholderText("Enter software ID to uninstall")
+        layout.addWidget(self.uninstall_entry)
 
-        self.pip_install_window.show()
+        uninstall_button = QtWidgets.QPushButton("Uninstall", uninstall_gui)
+        uninstall_button.clicked.connect(self.trigger_uninstall)
+        layout.addWidget(uninstall_button)
 
-    def pip_install_package(self, package_name):
-        pip_command = f"pip download --target {self.temp_dir} {package_name}"
-        try:
-            result = subprocess.run(pip_command, shell=True, capture_output=True, text=True)
-            print(f"Pip install result: {result.stdout}")
-            if result.stderr:
-                print(f"Pip install errors: {result.stderr}")
-        except Exception as e:
-            print(f"Error installing package: {e}")
+        uninstall_gui.exec_()
+
+    def trigger_uninstall(self):
+        software_id = self.uninstall_entry.text()
+        if software_id:
+            self.uninstall_software(software_id)
+        else:
+            print("Please enter a software ID.")
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

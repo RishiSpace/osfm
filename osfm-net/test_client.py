@@ -1,10 +1,55 @@
-import socket
 import subprocess
+import socket
 import time
 import os
+import subprocess
 
-# Software Version
-Software_Version = "V1.03 (Net)"
+def uninstall_software(software_id):
+    try:
+        print(f"Uninstalling software with ID: {software_id}")
+        result = subprocess.run(["winget", "uninstall", "--id", software_id], capture_output=True, text=True, check=True)
+        if result.returncode == 0:
+            print(f"Uninstall succeeded: {result.stdout}")
+        else:
+            print(f"Uninstall failed with exit code {result.returncode}")
+            print(f"Error output: {result.stderr}")
+    except subprocess.CalledProcessError as e:
+        print(f"Uninstall command failed with exit code {e.returncode}")
+        print(f"Error output: {e.stderr}")
+    except Exception as e:
+        print(f"Exception occurred while uninstalling software: {e}")
+
+def execute_command(command):
+    try:
+        print(f"Executing command: {command}")
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"Command succeeded: {result.stdout}")
+        else:
+            print(f"Command failed with exit code {result.returncode}")
+            print(f"Error output: {result.stderr}")
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed with exit code {e.returncode}")
+        print(f"Error output: {e.stderr}")
+    except Exception as e:
+        print(f"Exception occurred while executing command: {e}")
+
+def enable_rdp():
+    commands = [
+        ("Enable-NetFirewallRule -DisplayGroup 'Remote Desktop'", "Error enabling firewall rules"),
+        ("Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0", "Error setting RDP properties"),
+        ("Restart-Service -Name 'TermService'", "Error restarting RDP service")
+    ]
+    try:
+        print("Enabling RDP...")
+        for command, error_message in commands:
+            subprocess.run(["powershell", "-Command", command], check=True)
+            print(f"Successfully executed: {command}")
+        print("RDP enabled successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Exception occurred while enabling RDP: {e}")
 
 def discover_server(port=12345):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,75 +84,43 @@ def connect_to_server(server_ip, port=12345):
         print(f"Failed to connect to server: {e}")
         client_socket.close()
         return None
-
-def execute_command(command):
-    try:
-        print(f"Executing: {command}")
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-        if result.returncode == 0:
-            print(f"Command succeeded: {result.stdout}")
-        else:
-            print(f"Command failed with exit code {result.returncode}")
-            print(f"Error output: {result.stderr}")
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with exit code {e.returncode}")
-        print(f"Error output: {e.stderr}")
-    except Exception as e:
-        print(f"Exception occurred while executing command: {e}")
-
-def enable_rdp():
-    commands = [
-        """powershell -Command "Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0; Enable-NetFirewallRule -DisplayGroup 'Remote Desktop';" """,
-        """powershell -Command "Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'UserAuthentication' -Value 0;" """,
-        """powershell -Command "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Name 'fAllowUnrestrictedRDP' -Value 1;" """
-    ]
-    for command in commands:
-        execute_command(f'powershell -Command "{command}"')
+    
+def handle_file_path(file_path):
+    print(f"Handling file path: {file_path}")
+    # Additional processing if needed
 
 def install_software(file_path):
-    # Ensure the file path exists before attempting to change directory
-    if os.path.exists(file_path):
-        # If the file is an .exe, execute it directly
-        if file_path.lower().endswith(".exe"):
-            execute_command(f'cd /d {os.path.dirname(file_path)} && ./{os.path.basename(file_path)}')
+    try:
+        print(f"Installing software from path: {file_path}")
+        result = subprocess.run(["winget", "install", file_path], capture_output=True, text=True, check=True)
+        if result.returncode == 0:
+            print(f"Installation succeeded: {result.stdout}")
         else:
-            print(f"Unsupported file type for installation: {file_path}")
-    else:
-        print(f"The file path does not exist: {file_path}")
-
-def handle_file_path(file_path):
-    print(f"Formatted file path: {file_path}")
-    
-    if os.path.exists(file_path):
-        print(f"File exists: {file_path}")
-        install_software(file_path)
-    else:
-        print(f"The path does not exist: {file_path}")
+            print(f"Installation failed with exit code {result.returncode}")
+            print(f"Error output: {result.stderr}")
+    except subprocess.CalledProcessError as e:
+        print(f"Installation command failed with exit code {e.returncode}")
+        print(f"Error output: {e.stderr}")
+    except Exception as e:
+        print(f"Exception occurred while installing software: {e}")
 
 def download_and_install_software(server_ip, port):
-    client_socket = connect_to_server(server_ip, port)
-    if not client_socket:
-        return
-
     try:
-        client_socket.sendall(b"UPLOAD_REQUEST")
-        network_share_path = client_socket.recv(1024).decode()
-        
-        print(f"Network share path received: {network_share_path}")
-
-        if os.path.exists(network_share_path):
-            install_software(network_share_path)
-        else:
-            print(f"Network path does not exist: {network_share_path}")
-
-    finally:
-        client_socket.close()
-
-def install_python_package(package_path):
-    if os.path.isfile(package_path):
-        execute_command(f"pip install {package_path}")
-    else:
-        print(f"Package file does not exist: {package_path}")
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
+            tcp_socket.connect((server_ip, port))
+            tcp_socket.sendall(b"UPLOAD")
+            file_name = tcp_socket.recv(1024).decode()
+            file_path = os.path.join(os.path.expanduser("~"), file_name)
+            with open(file_path, "wb") as f:
+                while True:
+                    data = tcp_socket.recv(4096)
+                    if data == b"END_OF_FILE":
+                        break
+                    f.write(data)
+            print(f"File downloaded and saved to {file_path}")
+            install_software(file_path)
+    except Exception as e:
+        print(f"Error downloading and installing software: {e}")
 
 def main():
     port = 12345
@@ -148,15 +161,11 @@ def main():
                 elif command.startswith("POWERSHELL "):
                     ps_command = command[len("POWERSHELL "):]
                     execute_command(f'powershell -Command "{ps_command}"')
-                elif command.startswith("PIP_INSTALL "):
-                    package_name = command[len("PIP_INSTALL "):].strip()
-                    package_path = os.path.join(network_share_path, package_name)  # Assuming package_path is known
-                    print(f"Attempting to install Python package: {package_path}")
-                    install_python_package(package_path)
                 elif command == "UPLOAD":
                     download_and_install_software(client_socket.getpeername()[0], port)
-                elif command == "UNINSTALL":
-                    execute_command("winget uninstall SomeSoftware")
+                elif command.startswith("UNINSTALL "):
+                    _, software_id = command.split(maxsplit=1)
+                    uninstall_software(software_id)
                 elif command == "FIX_WINDOWS":
                     execute_command("sfc /scannow")
             except (socket.error, ConnectionResetError) as e:
