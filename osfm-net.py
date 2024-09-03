@@ -1,41 +1,30 @@
 import sys
 import os
-import platform
 import socket
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QListWidget, QLabel
 import json
 import threading
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-import pyAD
-import winget
+import time
+import subprocess
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, 
+                              QListWidget, QLabel, QTextEdit, QDialog, QFormLayout, QMessageBox)
 
-# Version label
+# Constants
 VERSION = "V1.03 (Net)"
-
-# Server mode GUI dark theme
-DARK_THEME = "#2F2F2F"
-
-# UDP port for discovery requests
 UDP_PORT = 12345
-
-# TCP port for connections
 TCP_PORT = 12346
-
-# Active Directory configuration
-AD_DOMAIN = "example.com"
-AD_USERNAME = "admin"
-AD_PASSWORD = "password"
-
-# SMB share configuration
-SHARE_NAME = "SoftwareDownloads"
-SHARE_FOLDER = "C:\\SoftwareDownloads"
+SERVER_LOCK_FILE = "server.lock"
 
 class OSFMClient:
     def __init__(self):
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_address = None
+
+    def start_udp_broadcast(self):
+        while True:
+            message = f"DISCOVERY_REQUEST {VERSION}".encode()
+            self.udp_socket.sendto(message, ('<broadcast>', UDP_PORT))
+            time.sleep(5)  # Broadcast every 5 seconds
 
     def start_udp_listener(self):
         self.udp_socket.bind(("", UDP_PORT))
@@ -43,81 +32,50 @@ class OSFMClient:
 
         while True:
             data, address = self.udp_socket.recvfrom(1024)
-            if data.decode() == "DISCOVERY_REQUEST":
-                self.send_udp_response(address)
-
-    def send_udp_response(self, address):
-        self.udp_socket.sendto(f"OSFM Client {VERSION}".encode(), address)
+            if data.decode().startswith("OSFM Server"):
+                self.server_address = address[0]
+                print(f"Discovered server at {self.server_address}")
+                self.connect_to_server(self.server_address)
 
     def connect_to_server(self, server_address):
-        self.tcp_socket.connect((server_address, TCP_PORT))
-        print(f"Connected to server {server_address}")
+        try:
+            self.tcp_socket.connect((server_address, TCP_PORT))
+            print(f"Connected to server {server_address}")
+        except Exception as e:
+            print(f"Failed to connect to server: {e}")
 
     def send_command(self, command):
-        self.tcp_socket.send(command.encode())
-        response = self.tcp_socket.recv(1024)
-        print(response.decode())
+        if self.tcp_socket:
+            try:
+                self.tcp_socket.send(command.encode())
+                response = self.tcp_socket.recv(1024).decode()
+                print(response)
+            except Exception as e:
+                print(f"Failed to send command: {e}")
 
     def close(self):
-        self.tcp_socket.close()
+        if self.tcp_socket:
+            self.tcp_socket.close()
         self.udp_socket.close()
 
-class OSFMServer:
-    def __init__(self):
-        self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.bind(("", TCP_PORT))
-        self.tcp_socket.listen(5)
-        print(f"Listening for TCP connections on port {TCP_PORT}")
+    def start(self):
+        threading.Thread(target=self.start_udp_broadcast, daemon=True).start()
+        threading.Thread(target=self.start_udp_listener, daemon=True).start()
+        # Keep the client running
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            self.close()
 
-        self.connected_pcs = {}
-        self.ad_integration = pyAD.ADIntegration(AD_DOMAIN, AD_USERNAME, AD_PASSWORD)
-
-    def start_tcp_listener(self):
-        while True:
-            client_socket, address = self.tcp_socket.accept()
-            print(f"Connected to client {address}")
-            threading.Thread(target=self.handle_client, args=(client_socket, address)).start()
-
-    def handle_client(self, client_socket, address):
-        pc_info = json.loads(client_socket.recv(1024).decode())
-        self.connected_pcs[address] = pc_info
-        print(f"PC {pc_info['hostname']} ({pc_info['os']}) connected")
-
-        while True:
-            command = client_socket.recv(1024).decode()
-            if command == "INSTALL_SOFTWARE":
-                self.install_software(client_socket, address)
-            elif command == "UNINSTALL_SOFTWARE":
-                self.uninstall_software(client_socket, address)
-            elif command == "FIX_WINDOWS":
-                self.fix_windows(client_socket, address)
-            elif command == "SEND_TERMINAL_COMMAND":
-                self.send_terminal_command(client_socket, address)
-
-    def install_software(self, client_socket, address):
-        software_id = client_socket.recv(1024).decode()
-        winget.download_software(software_id)
-        client_socket.send("SOFTWARE_DOWNLOADED".encode())
-
-    def uninstall_software(self, client_socket, address):
-        software_id = client_socket.recv(1024).decode()
-        winget.uninstall_software(software_id)
-        client_socket.send("SOFTWARE_UNINSTALLED".encode())
-
-    def fix_windows(self, client_socket, address):
-        client_socket.send("FIX_WINDOWS_COMMAND".encode())
-
-    def send_terminal_command(self, client_socket, address):
-        command = client_socket.recv(1024).decode()
-        client_socket.send(command.encode())
-
-    def close(self):
-        self.tcp_socket.close()
+    def check_for_server(self):
+        return os.path.isfile(SERVER_LOCK_FILE)
 
 class ServerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setup_ui()
+        self.client_socket = None
 
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
@@ -131,11 +89,11 @@ class ServerGUI(QMainWindow):
         button_layout = QHBoxLayout()
 
         self.install_button = QPushButton("Install Software", self)
-        self.install_button.clicked.connect(self.create_install_software_gui)
+        self.install_button.clicked.connect(self.open_install_software_dialog)
         button_layout.addWidget(self.install_button)
 
         self.uninstall_button = QPushButton("Uninstall Software", self)
-        self.uninstall_button.clicked.connect(self.uninstall_software)
+        self.uninstall_button.clicked.connect(self.open_uninstall_software_dialog)
         button_layout.addWidget(self.uninstall_button)
 
         self.fix_button = QPushButton("Fix Windows", self)
@@ -163,70 +121,181 @@ class ServerGUI(QMainWindow):
 
         self.show()
 
+    def connect_to_server(self):
+        if self.client_socket is not None:
+            self.client_socket.close()
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect(('localhost', TCP_PORT))
+
+    def open_install_software_dialog(self):
+        self._open_software_dialog("Install Software", self.install_software)
+
+    def open_uninstall_software_dialog(self):
+        self._open_software_dialog("Uninstall Software", self.uninstall_software)
+
+    def _open_software_dialog(self, title, action_callback):
+        dialog = QDialog(self)
+        dialog.setWindowTitle(title)
+        layout = QVBoxLayout()
+        dialog.setLayout(layout)
+
+        form_layout = QFormLayout()
+        self.software_entry = QLineEdit()
+        form_layout.addRow(QLabel("Software ID:"), self.software_entry)
+
+        self.output_box = QTextEdit()
+        self.output_box.setReadOnly(True)
+        form_layout.addRow(QLabel("Output:"), self.output_box)
+
+        layout.addLayout(form_layout)
+
+        action_button = QPushButton(title, self)
+        action_button.clicked.connect(action_callback)
+        layout.addWidget(action_button)
+
+        dialog.exec_()
+
     def install_software(self):
-        software_window = tk.Toplevel(self.root)
-        software_window.title("Install Software")
-        software_window.configure(bg=DARK_THEME)
-
-        software_entry = tk.Entry(software_window, width=50)
-        software_entry.pack()
-
-        def install_software_callback():
-            software_id = software_entry.get()
-            winget.download_software(software_id)
-            messagebox.showinfo("Success", "Software downloaded successfully")
-
-        install_button = tk.Button(software_window, text="Install", command=install_software_callback, bg=DARK_THEME, fg="white")
-        install_button.pack()
+        software_id = self.software_entry.text()
+        self.output_box.append(f"Starting installation of software ID: {software_id}")
+        result = self._send_command_to_server(f"INSTALL_SOFTWARE:{software_id}")
+        self.output_box.append(f"Installation result: {result}")
 
     def uninstall_software(self):
-        software_window = tk.Toplevel(self.root)
-        software_window.title("Uninstall Software")
-        software_window.configure(bg=DARK_THEME)
-
-        software_entry = tk.Entry(software_window, width=50)
-        software_entry.pack()
-
-        def uninstall_software_callback():
-            software_id = software_entry.get()
-            winget.uninstall_software(software_id)
-            messagebox.showinfo("Success", "Software uninstalled successfully")
-
-        uninstall_button = tk.Button(software_window, text="Uninstall", command=uninstall_software_callback, bg=DARK_THEME, fg="white")
-        uninstall_button.pack()
+        software_id = self.software_entry.text()
+        self.output_box.append(f"Starting uninstallation of software ID: {software_id}")
+        result = self._send_command_to_server(f"UNINSTALL_SOFTWARE:{software_id}")
+        self.output_box.append(f"Uninstallation result: {result}")
 
     def fix_windows(self):
-        messagebox.showinfo("Success", "Windows fixed successfully")
+        result = self._send_command_to_server("FIX_WINDOWS")
+        QMessageBox.information(self, "Success", result)
 
-    def send_terminal_command(self):
-        command_window = tk.Toplevel(self.root)
-        command_window.title("Send Terminal Command")
-        command_window.configure(bg=DARK_THEME)
+    def send_powershell(self):
+        command = self.powershell_entry.text()
+        self.output_box.append(f"Sending PowerShell command: {command}")
+        result = self._send_command_to_server(f"SEND_TERMINAL_COMMAND:{command}")
+        self.output_box.append(f"Command result: {result}")
 
-        command_entry = tk.Entry(command_window, width=50)
-        command_entry.pack()
+    def _send_command_to_server(self, command):
+        try:
+            self.connect_to_server()
+            self.client_socket.send(command.encode())
+            response = self.client_socket.recv(1024).decode()
+            self.client_socket.close()
+            return response
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-        def send_command_callback():
-            command = command_entry.get()
-            # Send command to connected PCs
-            pass
+class OSFMServer:
+    def __init__(self):
+        self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.tcp_socket.bind(("", TCP_PORT))
+        self.tcp_socket.listen(5)
+        print(f"Listening for TCP connections on port {TCP_PORT}")
 
-        send_button = tk.Button(command_window, text="Send", command=send_command_callback, bg=DARK_THEME, fg="white")
-        send_button.pack()
+        self.connected_pcs = {}
+        self.ad_integration = None  # Add AD Integration if needed
+
+    def start_udp_broadcast(self):
+        while True:
+            message = f"OSFM Server {VERSION}".encode()
+            self.udp_socket.sendto(message, ('<broadcast>', UDP_PORT))
+            time.sleep(5)  # Broadcast every 5 seconds
+
+    def start_tcp_listener(self):
+        while True:
+            client_socket, address = self.tcp_socket.accept()
+            print(f"Connected to client {address}")
+            threading.Thread(target=self.handle_client, args=(client_socket, address)).start()
+
+    def handle_client(self, client_socket, address):
+        pc_info = json.loads(client_socket.recv(1024).decode())
+        self.connected_pcs[address] = pc_info
+        print(f"PC {pc_info['hostname']} ({pc_info['os']}) connected")
+
+        while True:
+            command = client_socket.recv(1024).decode()
+            if command.startswith("INSTALL_SOFTWARE"):
+                self.install_software(client_socket, address, command)
+            elif command.startswith("UNINSTALL_SOFTWARE"):
+                self.uninstall_software(client_socket, address, command)
+            elif command == "FIX_WINDOWS":
+                self.fix_windows(client_socket, address)
+            elif command.startswith("SEND_TERMINAL_COMMAND"):
+                self.send_terminal_command(client_socket, address, command)
+
+    def install_software(self, client_socket, address, command):
+        software_id = command.split(':')[1]
+        # Simulate software installation
+        print(f"Installing software with ID: {software_id}")
+        result = f"Software with ID {software_id} installed."
+        client_socket.send(result.encode())
+
+    def uninstall_software(self, client_socket, address, command):
+        software_id = command.split(':')[1]
+        # Simulate software uninstallation
+        print(f"Uninstalling software with ID: {software_id}")
+        result = f"Software with ID {software_id} uninstalled."
+        client_socket.send(result.encode())
+
+    def fix_windows(self, client_socket, address):
+        print(f"Fixing Windows for {address}")
+        # Simulate Windows fix
+        result = "Windows fixed successfully."
+        client_socket.send(result.encode())
+
+    def send_terminal_command(self, client_socket, address, command):
+        command_text = command.split(':')[1]
+        print(f"Executing command on {address}: {command_text}")
+        result = self._execute_command_on_target(command_text)
+        client_socket.send(result.encode())
+
+    def _execute_command_on_target(self, command):
+        # Execute a command on the target machine and return the result
+        try:
+            result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, text=True)
+            return f"Command executed successfully: {result}"
+        except subprocess.CalledProcessError as e:
+            return f"Command failed: {e.output}"
+
+    def close(self):
+        self.tcp_socket.close()
+        self.udp_socket.close()
 
     def start(self):
-        self.root.mainloop()
+        if os.path.isfile(SERVER_LOCK_FILE):
+            print("Server is already running. Exiting...")
+            sys.exit(1)
+        else:
+            with open(SERVER_LOCK_FILE, 'w') as lock_file:
+                lock_file.write(str(os.getpid()))
+
+            try:
+                threading.Thread(target=self.start_udp_broadcast, daemon=True).start()
+                app = QApplication(sys.argv)
+                gui = ServerGUI()
+                gui.show()
+                app.exec_()
+            finally:
+                os.remove(SERVER_LOCK_FILE)
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--server":
-        app = QApplication(sys.argv)  # Create the QApplication object
-        server = OSFMServer()
-        gui = ServerGUI()
-        gui.show()
-        sys.exit(app.exec_())
+        client = OSFMClient()
+        if client.check_for_server():
+            print("Upgrading existing client to server mode.")
+            client.close()
+            server = OSFMServer()
+            server.start()
+        else:
+            server = OSFMServer()
+            server.start()
     else:
         client = OSFMClient()
-        client.start_udp_listener()
+        client.start()
 
 if __name__ == "__main__":
     main()
