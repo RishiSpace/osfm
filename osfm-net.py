@@ -595,7 +595,6 @@ def discover_server(port=12345):
 # Connect to the discovered server
 def connect_to_server(server_ip, port=12345):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.settimeout(10)
     try:
         client_socket.connect((server_ip, port))
         hostname = socket.gethostname()
