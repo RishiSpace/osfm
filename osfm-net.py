@@ -2,9 +2,14 @@ import subprocess
 import socket
 import time
 import os
+import signal
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
+
+def signal_handler(sig, frame):
+    print("Exiting gracefully...")
+    sys.exit(0)
 
 host = ""
 # Check for existing server instance
@@ -650,6 +655,11 @@ def main_client():
     client_socket = None
     local_hostname = get_local_hostname()
 
+    # Set up signal handling for graceful exit
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+
     while True:
         if client_socket is None:
             print("Searching for server...")
@@ -685,8 +695,8 @@ def main_client():
                     print("Server closed the connection. Searching for server again...")
                 else:
                     print(f"Received unexpected response: {response}")
-            except socket.timeout:
-                print("Connection timeout. Reconnecting...")
+            except ConnectionResetError:
+                print("Connection to server was forcibly closed. Reconnecting...")
                 client_socket.close()
                 client_socket = None
             except socket.error as e:
