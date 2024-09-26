@@ -162,7 +162,37 @@ class Server(QtWidgets.QMainWindow):
         self.send_command("UNINSTALL")
 
     def fix_windows(self):
-        self.send_command("FIX_WINDOWS")
+        try:
+            # 1. Run System File Checker (sfc)
+            print("Running System File Checker (sfc)...")
+            sfc_result = subprocess.run(["sfc", "/scannow"], capture_output=True, text=True)
+            if sfc_result.returncode == 0:
+                print("sfc completed successfully.")
+                print(sfc_result.stdout)
+            else:
+                print("sfc encountered an error.")
+                print(sfc_result.stderr)
+
+            # 2. Run DISM to check the health of the Windows image
+            print("Running DISM to check the health of the Windows image...")
+            dism_check = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"], capture_output=True, text=True)
+            print(dism_check.stdout)
+            
+            # 3. Run DISM to scan the Windows image for corruption
+            print("Running DISM to scan the Windows image for corruption...")
+            dism_scan = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"], capture_output=True, text=True)
+            print(dism_scan.stdout)
+            
+            # 4. Run DISM to repair the Windows image
+            print("Running DISM to repair the Windows image...")
+            dism_repair = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"], capture_output=True, text=True)
+            print(dism_repair.stdout)
+
+            print("Windows fix process completed.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred: {e.stderr}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
     def send_powershell(self):
         command = self.powershell_entry.text()

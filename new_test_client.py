@@ -212,7 +212,6 @@ def download_and_install_software(server_ip, port):
 def main():
     port = 12345
     client_socket = None
-    file_path = ""  # Initialize file_path variable
 
     while True:
         if client_socket is None:
@@ -242,7 +241,11 @@ def main():
                 client_socket.close()
                 client_socket = None
             except socket.error as e:
-                print(f"Socket error: {e}")
+                print(f"Socket error: {e}. Reconnecting...")
+                client_socket.close()
+                client_socket = None
+            except Exception as e:
+                print(f"Unexpected error: {e}. Reconnecting...")
                 client_socket.close()
                 client_socket = None
 
