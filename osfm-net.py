@@ -6,6 +6,8 @@ import signal
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
+from win10toast import ToastNotifier
+
 
 def signal_handler(sig, frame):
     print("Exiting gracefully...")
@@ -52,6 +54,13 @@ def ensure_temp_folder_shared():
         print(f"Error sharing temp folder: {e}")
     except Exception as e:
         print(f"Exception occurred: {e}")
+
+def show_toast_notification():
+    toaster = ToastNotifier()
+    toaster.show_toast("OSFM-Control",
+                       "This system is currently being controlled by an Administrator",
+                       duration=10)  # Duration in seconds
+
 
 # Server class definition
 class Server(QtWidgets.QMainWindow):
@@ -634,6 +643,8 @@ def connect_to_server(server_ip, port=12345):
         hostname = socket.gethostname()
         print(f"Sending hostname: {hostname}")
         client_socket.sendall(f"HOSTNAME {hostname}".encode())
+        # Show the toast notification here
+        show_toast_notification()
         return client_socket
     except (socket.timeout, socket.error) as e:
         print(f"Failed to connect to server: {e}")
@@ -644,7 +655,7 @@ def connect_to_server(server_ip, port=12345):
 def handle_file_path(file_path):
     print(f"Handling file path: {file_path}")
 
-# Install software using Winget
+# Install software using Winget (Redundant function but may be needed later)
 def install_software(file_path):
     try:
         print(f"Installing software from path: {file_path}")
@@ -684,8 +695,6 @@ def main_client():
     client_socket = None
     local_hostname = get_local_hostname()
 
-    
-
     # Set up signal handling for graceful exit
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -700,16 +709,26 @@ def main_client():
                 client_socket = connect_to_server(server_ip, port)
 
                 if client_socket:  # Ensure connection was successful
-                    # Receive the server's hostname from the first message
-                    server_hostname = client_socket.recv(1024).decode().split(" ")[1]
+                    try:
+                        # Receive the server's hostname from the first message
+                        server_hostname = client_socket.recv(1024).decode().split(" ")[1]
 
-                    # Skip connecting if the server hostname is the same as the local hostname
-                    if server_hostname == local_hostname:
-                        print("Detected server is on the same machine. Skipping connection.")
+                        # Skip connecting if the server hostname is the same as the local hostname
+                        if server_hostname == local_hostname:
+                            print("Detected server is on the same machine. Skipping connection.")
+                            client_socket.close()
+                            client_socket = None
+                        else:
+                            print(f"Connected to server at {server_ip}.")
+                            
+                    except ConnectionResetError:
+                        print("Connection was closed by the server before receiving hostname.")
                         client_socket.close()
                         client_socket = None
-                    else:
-                        print(f"Connected to server at {server_ip}.")
+                    except Exception as e:
+                        print(f"Unexpected error while receiving hostname: {e}")
+                        client_socket.close()
+                        client_socket = None
             else:
                 print("Retrying in 5 seconds...")
                 time.sleep(5)
@@ -747,9 +766,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1 and sys.argv[1] == '--server':
         if is_server_running():
-            print("An existing server instance is already running.")
-            print("Elevating to server mode.")
-            # Additional logic for elevating to server can go here
+            print("An existing server instance is already running.") 
         else:
             print("Starting server...")
             # Ensure the temp folder is shared before continuing
