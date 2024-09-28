@@ -13,4 +13,5 @@
 
 ### Screenshots:
 
-![image](https://github.com/RishiSpace/osfm/assets/104022405/80338328-71a5-4fb2-9e81-0d9b6a48533d)
+![image](https://github.com/user-attachments/assets/ff3c8249-a05b-41c3-9b69-eb90f0f07b03)
+
