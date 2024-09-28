@@ -80,6 +80,23 @@ class Server(QtWidgets.QMainWindow):
 
     
 
+    def enable_internet(self):
+        self.change_dns("automatic")
+
+    def disable_internet(self):
+        self.change_dns("0.0.0.0")
+
+    def change_dns(self, dns):
+        try:
+            if dns == "automatic":
+                command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ResetServerAddresses"
+            else:
+                command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses '0.0.0.0'"
+            subprocess.run(["powershell", "-Command", command], check=True)
+            print(f"DNS set to {dns}.")
+        except Exception as e:
+            print(f"Error changing DNS: {e}")
+    
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
         self.setGeometry(100, 100, 800, 600)
@@ -102,6 +119,17 @@ class Server(QtWidgets.QMainWindow):
         self.fix_button = QtWidgets.QPushButton("Fix Windows", self)
         self.fix_button.clicked.connect(self.fix_windows)
         button_layout.addWidget(self.fix_button)
+
+        # Create buttons for enabling/disabling internet
+        self.enable_button = QtWidgets.QPushButton('Enable Internet', self)
+        self.enable_button.clicked.connect(self.enable_internet)
+
+        self.disable_button = QtWidgets.QPushButton('Disable Internet', self)
+        self.disable_button.clicked.connect(self.disable_internet)
+
+        # Add buttons to layout
+        button_layout.addWidget(self.enable_button)
+        button_layout.addWidget(self.disable_button)
 
         layout.addLayout(button_layout)
 
