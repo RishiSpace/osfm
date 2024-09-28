@@ -81,22 +81,35 @@ class Server(QtWidgets.QMainWindow):
     
 
     def enable_internet(self):
-        self.change_dns("automatic")
+        command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ResetServerAddresses"
+        self.send_command(f"POWERSHELL {command}")
 
     def disable_internet(self):
-        self.change_dns("0.0.0.0")
-
-    def change_dns(self, dns):
-        try:
-            if dns == "automatic":
-                command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ResetServerAddresses"
-            else:
-                command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses '0.0.0.0'"
-            subprocess.run(["powershell", "-Command", command], check=True)
-            print(f"DNS set to {dns}.")
-        except Exception as e:
-            print(f"Error changing DNS: {e}")
+        command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses '0.0.0.0'"
+        self.send_command(f"POWERSHELL {command}")
     
+    def create_user(self):
+        username = QtWidgets.QInputDialog.getText(self, "Create User", "Enter username:")
+        if username[1]:  # If user pressed OK
+            password = QtWidgets.QInputDialog.getText(self, "Create User", "Enter password:", QtWidgets.QLineEdit.Password)
+            if password[1]:  # If user pressed OK
+                command = f"New-LocalUser -Name '{username[0]}' -Password (ConvertTo-SecureString '{password[0]}' -AsPlainText -Force) -AccountNeverExpires; Add-LocalGroupMember -Group 'Administrators' -Member '{username[0]}'"
+                self.send_command(f"POWERSHELL {command}")
+
+    def delete_user(self):
+        username = QtWidgets.QInputDialog.getText(self, "Delete User", "Enter username to delete:")
+        if username[1]:  # If user pressed OK
+            command = f"Remove-LocalUser -Name '{username[0]}'"
+            self.send_command(f"POWERSHELL {command}")
+
+    # def send_command(self, command):
+    #     if self.client_socket:  # Assuming you have a client_socket attribute
+    #         try:
+    #             self.client_socket.sendall(f"POWERSHELL {command}".encode())
+    #             print(f"Sent command to client: {command}")
+    #         except Exception as e:
+    #             print(f"Error sending command to client: {e}")
+
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
         self.setGeometry(100, 100, 800, 600)
@@ -130,6 +143,17 @@ class Server(QtWidgets.QMainWindow):
         # Add buttons to layout
         button_layout.addWidget(self.enable_button)
         button_layout.addWidget(self.disable_button)
+
+        # Create buttons for user management
+        self.create_user_button = QtWidgets.QPushButton('Create User', self)
+        self.create_user_button.clicked.connect(self.create_user)
+
+        self.delete_user_button = QtWidgets.QPushButton('Delete User', self)
+        self.delete_user_button.clicked.connect(self.delete_user)
+
+        # Add user management buttons to layout
+        button_layout.addWidget(self.create_user_button)
+        button_layout.addWidget(self.delete_user_button)
 
         layout.addLayout(button_layout)
 
@@ -768,8 +792,8 @@ def main_client():
                     file_path = response.split(" ")[1]
                     handle_file_path(file_path)
                 elif response.startswith("POWERSHELL"):
-                    pscommand = response.split(" ")[1]
-                    subprocess.run(pscommand)
+                    ps_command = response.split(" ", 1)[1]  # Get everything after 'POWERSHELL'
+                    subprocess.run(["powershell", "-Command", ps_command], check=True)  # Make sure to handle exceptions
                 elif response == "CLOSE":
                     client_socket.close()
                     client_socket = None
