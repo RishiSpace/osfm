@@ -25,6 +25,34 @@ def is_server_running(port=12345):
 def get_local_hostname():
     return socket.gethostname()
 
+# Check if the temp folder is shared
+def ensure_temp_folder_shared():
+    temp_folder_path = os.path.join(os.path.dirname(__file__), "osfm-temp")  # Adjust if your temp folder has a different name or path
+    
+    if not os.path.exists(temp_folder_path):
+        os.makedirs(temp_folder_path)
+
+    try:
+        # Check if the folder is already shared
+        result = subprocess.run(
+            ["powershell", "-Command", f"Get-SmbShare -Name 'osfm-temp' -ErrorAction SilentlyContinue"],
+            capture_output=True, text=True
+        )
+        
+        if result.stdout:
+            print("Temp folder is already shared.")
+        else:
+            print("Sharing the temp folder...")
+            subprocess.run(
+                ["powershell", "-Command", f"New-SmbShare -Name 'osfm-temp' -Path '{temp_folder_path}' -FullAccess Everyone"],
+                check=True
+            )
+            print("Temp folder shared successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error sharing temp folder: {e}")
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+
 # Server class definition
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
@@ -41,6 +69,7 @@ class Server(QtWidgets.QMainWindow):
         self.start_tcp_server()
         self.apply_styling()
 
+    
 
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
@@ -308,7 +337,7 @@ class Server(QtWidgets.QMainWindow):
 
     def download_software(self, pkg_id):
         print(f"Downloading software: {pkg_id}")
-        download_path = f"temp/{pkg_id}"
+        download_path = f"osfm-temp/{pkg_id}"
         result = subprocess.run(["winget", "download", "--id", pkg_id, "-d", download_path], capture_output=True, text=True)
         if result.returncode != 0:
             print(f"Failed to download {pkg_id}: {result.stderr}")
@@ -318,7 +347,7 @@ class Server(QtWidgets.QMainWindow):
     def send_download_path(self, pkg_id, host, hostname):
         file_path = self.find_downloaded_file(pkg_id)
         if file_path:
-            formatted_path = f"\\{host}\\temp\\{pkg_id}"
+            formatted_path = f"\\{host}\\osfm-temp\\{pkg_id}"
             command = f"FILE_PATH {formatted_path}"
             if hostname in self.connections:
                 try:
@@ -332,7 +361,7 @@ class Server(QtWidgets.QMainWindow):
             print(f"No file found for package ID: {pkg_id}")
 
     def find_downloaded_file(self, pkg_id):
-        package_dir = os.path.join("temp", pkg_id)
+        package_dir = os.path.join("osfm-temp", pkg_id)
         if os.path.exists(package_dir):
             for file in os.listdir(package_dir):
                 if file.endswith(".exe") or file.endswith(".msi"):
@@ -655,6 +684,8 @@ def main_client():
     client_socket = None
     local_hostname = get_local_hostname()
 
+    
+
     # Set up signal handling for graceful exit
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -721,6 +752,8 @@ if __name__ == "__main__":
             # Additional logic for elevating to server can go here
         else:
             print("Starting server...")
+            # Ensure the temp folder is shared before continuing
+            ensure_temp_folder_shared()
             server = Server()
             sys.exit(app.exec_())
     else:
