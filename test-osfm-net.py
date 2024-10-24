@@ -14,34 +14,27 @@ def signal_handler(sig, frame):
     print("Exiting gracefully...")
     sys.exit(0)
 
-
-# Check for existing server instance
 def is_server_running(port=12345):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(('', port))
-            return False  # Port is available, no server is running
+            return False
     except socket.error:
-        return True  # Port is in use, server is running
+        return True
     
-# Get the local hostname
 def get_local_hostname():
     return socket.gethostname()
 
-# Check if the temp folder is shared
 def ensure_temp_folder_shared():
-    temp_folder_path = os.path.join(os.path.dirname(__file__), "osfm-temp")  # Adjust if your temp folder has a different name or path
-    
+    temp_folder_path = os.path.join(os.path.dirname(__file__), "osfm-temp")  
     if not os.path.exists(temp_folder_path):
         os.makedirs(temp_folder_path)
 
     try:
-        # Check if the folder is already shared
         result = subprocess.run(
             ["powershell", "-Command", f"Get-SmbShare -Name 'osfm-temp' -ErrorAction SilentlyContinue"],
             capture_output=True, text=True
         )
-        
         if result.stdout:
             print("Temp folder is already shared.")
         else:
@@ -58,12 +51,8 @@ def ensure_temp_folder_shared():
 
 def show_toast_notification():
     toaster = ToastNotifier()
-    toaster.show_toast("OSFM-Control",
-                       "This system is currently being controlled by an Administrator",
-                       duration=10)  # Duration in seconds
+    toaster.show_toast("OSFM-Control", "This system is currently being controlled by an Administrator", duration=10)
 
-
-# Server class definition
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
         super().__init__()
@@ -73,13 +62,11 @@ class Server(QtWidgets.QMainWindow):
         self.server_socket.bind((self.server_ip, self.server_port))
         self.server_socket.listen(5)
         self.connections = {}
-        self.network_share_path = r"\\NETWORK_SHARE\path\to\folder"
+        self.network_share_path = r"\\NETWORK_SHARE\path\to\folder"  # Replace if needed
         self.setup_ui()
         self.start_udp_listener()
         self.start_tcp_server()
-        self.apply_styling()
-
-    
+        self.apply_styling()  # Apply styling at the end
 
     def enable_internet(self):
         command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ResetServerAddresses"
@@ -88,28 +75,20 @@ class Server(QtWidgets.QMainWindow):
     def disable_internet(self):
         command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses '0.0.0.0'"
         self.send_command(f"POWERSHELL {command}")
-    
+
     def create_user(self):
         username = QtWidgets.QInputDialog.getText(self, "Create User", "Enter username:")
-        if username[1]:  # If user pressed OK
+        if username[1]:
             password = QtWidgets.QInputDialog.getText(self, "Create User", "Enter password:", QtWidgets.QLineEdit.Password)
-            if password[1]:  # If user pressed OK
+            if password[1]:
                 command = f"New-LocalUser -Name '{username[0]}' -Password (ConvertTo-SecureString '{password[0]}' -AsPlainText -Force) -AccountNeverExpires; Add-LocalGroupMember -Group 'Administrators' -Member '{username[0]}'"
                 self.send_command(f"POWERSHELL {command}")
 
     def delete_user(self):
         username = QtWidgets.QInputDialog.getText(self, "Delete User", "Enter username to delete:")
-        if username[1]:  # If user pressed OK
+        if username[1]:
             command = f"Remove-LocalUser -Name '{username[0]}'"
             self.send_command(f"POWERSHELL {command}")
-
-    # def send_command(self, command):
-    #     if self.client_socket:  # Assuming you have a client_socket attribute
-    #         try:
-    #             self.client_socket.sendall(f"POWERSHELL {command}".encode())
-    #             print(f"Sent command to client: {command}")
-    #         except Exception as e:
-    #             print(f"Error sending command to client: {e}")
 
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")
@@ -177,6 +156,9 @@ class Server(QtWidgets.QMainWindow):
 
         self.show()
 
+
+
+
     def start_udp_listener(self):
         udp_thread = threading.Thread(target=self.udp_listener, daemon=True)
         udp_thread.start()
@@ -195,6 +177,7 @@ class Server(QtWidgets.QMainWindow):
         except Exception as e:
             print(f"UDP listener error: {e}")
 
+
     def start_tcp_server(self):
         tcp_thread = threading.Thread(target=self.tcp_server, daemon=True)
         tcp_thread.start()
@@ -207,11 +190,12 @@ class Server(QtWidgets.QMainWindow):
                 hostname = client_socket.recv(1024).decode()
                 self.connections[hostname] = client_socket
                 print(f"Client {hostname} ({address}) connected")
-                self.send_command(host)
+                self.send_command(host) # Sends the server hostname on connection
                 self.update_clients_list()
                 threading.Thread(target=self.handle_client, args=(client_socket, hostname), daemon=True).start()
             except Exception as e:
                 print(f"TCP server error: {e}")
+
 
     def handle_client(self, client_socket, hostname):
         while True:
@@ -220,14 +204,14 @@ class Server(QtWidgets.QMainWindow):
                 if not data:
                     break
                 print(f"Received from {hostname}: {data.decode()}")
-                if data.startswith(b"UPLOAD"):
+                if data.startswith(b"UPLOAD"):  # Likely not used, but kept for completeness if you need file uploads
                     self.receive_file(client_socket)
-                elif data.startswith(b"FILE_PATH"):
+                elif data.startswith(b"FILE_PATH"):  # NOT USED CURRENTLY
                     file_path = data.decode().split(" ", 1)[1]
-                    self.handle_file_path(file_path)
-                elif data.startswith(b"UNINSTALL"):
+                    self.handle_file_path(file_path)  # Potentially for future use
+                elif data.startswith(b"UNINSTALL"): # NOT USED CURRENTLY
                     software_id = data.decode().split(" ", 1)[1]
-                    self.uninstall_software(software_id)
+                    self.uninstall_software(software_id) # If implementing a software list
             except Exception as e:
                 print(f"Client connection error: {e}")
                 break
@@ -236,10 +220,10 @@ class Server(QtWidgets.QMainWindow):
             del self.connections[hostname]
         self.update_clients_list()
 
-    def receive_file(self, client_socket):
+    def receive_file(self, client_socket): # Likely redundant
         try:
             file_name = client_socket.recv(1024).decode()
-            file_path = os.path.join(self.network_share_path, file_name)
+            file_path = os.path.join(self.network_share_path, file_name) # Or some other save location
 
             if not os.path.exists(self.network_share_path):
                 os.makedirs(self.network_share_path)
@@ -256,6 +240,7 @@ class Server(QtWidgets.QMainWindow):
             print(f"Error receiving file: {e}")
 
 
+
     def send_command(self, command):
         for conn in self.connections.values():
             try:
@@ -263,15 +248,38 @@ class Server(QtWidgets.QMainWindow):
             except Exception as e:
                 print(f"Failed to send command: {e}")
 
-    def install_software(self):
-        self.send_command("INSTALL")
+    def install_software(file_path):
+        if os.path.isdir(file_path):
+            files = os.listdir(file_path)
+            executables = [f for f in files if f.endswith(('.exe', '.msi'))]
+            if not executables:
+                print("No executable files found in the directory.")
+                return
+            for executable in executables:
+                full_path = os.path.join(file_path, executable)
+                print(f"Installing {full_path}...")
+                # Use Start-Process to execute the installer with the UNC path
+                command = f'cmd.exe /c "{full_path}" /quiet'
+                print(command)
+                subprocess.run(command)
+        else:
+            print(f"The path is not a directory: {file_path}")
 
-    def uninstall_software(self):
-        self.send_command("UNINSTALL")
+
+    def uninstall_software(self, software_id=None):  # Takes software_id as an argument now
+        if not software_id:  # If no ID provided, prompt for input
+            software_id = QtWidgets.QInputDialog.getText(self, "Uninstall Software", "Enter Software ID to uninstall:")
+            if not software_id[1]: # User hit cancel
+                return
+            software_id = software_id[0]
+
+        command = f"winget uninstall --id \"{software_id}\"" # Quotes around app id
+        self.send_command(f"POWERSHELL {command}")
+
 
     def fix_windows(self):
+
         try:
-            # 1. Run System File Checker (sfc)
             print("Running System File Checker (sfc)...")
             sfc_result = subprocess.run(["sfc", "/scannow"], capture_output=True, text=True)
             if sfc_result.returncode == 0:
@@ -281,22 +289,18 @@ class Server(QtWidgets.QMainWindow):
                 print("sfc encountered an error.")
                 print(sfc_result.stderr)
 
-            # 2. Run DISM to check the health of the Windows image
+
             print("Running DISM to check the health of the Windows image...")
             dism_check = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"], capture_output=True, text=True)
             print(dism_check.stdout)
-            
-            # 3. Run DISM to scan the Windows image for corruption
             print("Running DISM to scan the Windows image for corruption...")
             dism_scan = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"], capture_output=True, text=True)
             print(dism_scan.stdout)
-            
-            # 4. Run DISM to repair the Windows image
             print("Running DISM to repair the Windows image...")
             dism_repair = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"], capture_output=True, text=True)
             print(dism_repair.stdout)
-
             print("Windows fix process completed.")
+
         except subprocess.CalledProcessError as e:
             print(f"Error occurred: {e.stderr}")
         except Exception as e:
@@ -314,7 +318,7 @@ class Server(QtWidgets.QMainWindow):
             self.clients_list.addItem(item)
             item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             item.setData(QtCore.Qt.UserRole, hostname)
-        self.clients_list.itemDoubleClicked.connect(self.rdp_to_client)
+        self.clients_list.itemDoubleClicked.connect(self.rdp_to_client)    
 
     def rdp_to_client(self, item):
         hostname = item.data(QtCore.Qt.UserRole)
@@ -329,7 +333,7 @@ class Server(QtWidgets.QMainWindow):
         result = subprocess.run(["winget", "search", search_term, "--source", "winget"], capture_output=True, text=True)
         if result.returncode == 0:
             self.software_options = self.parse_winget_output(result.stdout)
-            print("Software options:", self.software_options)  # Debugging line
+            print("Software options:", self.software_options) #Debugging line
             self.display_software_options()
         else:
             print(f"Failed to search for {search_term}: {result.stderr}")
@@ -342,15 +346,17 @@ class Server(QtWidgets.QMainWindow):
         if header_index is None:
             return software_options
 
+
         header_line = lines[header_index]
         name_pos = header_line.index('Name')
         id_pos = header_line.index('Id')
         version_pos = header_line.index('Version')
+
         match_pos = header_line.index('Match') if 'Match' in header_line else None
         source_pos = header_line.index('Source') if 'Source' in header_line else None
 
         for line in lines[header_index + 2:]:
-            if source_pos:
+            if source_pos:  # winget output changes, this adapts
                 name = line[name_pos:id_pos].strip()
                 id_ = line[id_pos:version_pos].strip()
                 version = line[version_pos:match_pos].strip() if match_pos else line[version_pos:source_pos].strip()
@@ -358,6 +364,7 @@ class Server(QtWidgets.QMainWindow):
             elif match_pos:
                 name = line[name_pos:id_pos].strip()
                 id_ = line[id_pos:version_pos].strip()
+
                 software_options[name] = id_
             else:
                 name = line[name_pos:id_pos].strip()
@@ -372,27 +379,26 @@ class Server(QtWidgets.QMainWindow):
             item = QtWidgets.QListWidgetItem(name)
             self.software_buttons_frame.addItem(item)
             item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            item.setData(QtCore.Qt.UserRole, name)
+            item.setData(QtCore.Qt.UserRole, self.software_options[name])    # Store the ID, not just the name
 
-    def toggle_selection(self, item):
-        name = item.data(QtCore.Qt.UserRole)
-        if name in self.selected_software:
-            self.selected_software.remove(name)
+
+    def toggle_selection(self, item): # Simplified Selection
+        software_id = item.data(QtCore.Qt.UserRole)    # Use item.data to get ID
+        if software_id in self.selected_software:
+            self.selected_software.remove(software_id)
+            item.setCheckState(QtCore.Qt.Unchecked)         # Update the checkbox visually
         else:
-            self.selected_software.add(name)
+            self.selected_software.add(software_id)
+            item.setCheckState(QtCore.Qt.Checked)    # Update the checkbox visually
 
-    def install_selected_software(self):
-        for name in self.selected_software:
-            if name not in self.software_options:
-                print(f"Software '{name}' not found in options.")
-                continue
+    def install_selected_software(self):  # Simplified Install
 
-            pkg_id = self.software_options[name]
-            self.download_software(pkg_id)
+        for software_id in self.selected_software:
+
+            self.download_software(software_id)
             for hostname in self.connections:
-                self.send_download_path(pkg_id, host, hostname)
-
-        self.send_command("INSTALL")
+                self.send_download_path(software_id, host, hostname)
+        self.send_command("INSTALL") # The "INSTALL" command is now sent
 
     def download_software(self, pkg_id):
         print(f"Downloading software: {pkg_id}")
@@ -403,11 +409,14 @@ class Server(QtWidgets.QMainWindow):
         else:
             print(f"Successfully downloaded {pkg_id}")
 
+
     def send_download_path(self, pkg_id, host, hostname):
         file_path = self.find_downloaded_file(pkg_id)
         if file_path:
-            formatted_path = f"\\{host}\\osfm-temp\\{pkg_id}"
+            # CRITICAL: Added "osfm-temp" share name here
+            formatted_path = f"\\{host}\\osfm-temp\\{file_path}"
             command = f"FILE_PATH {formatted_path}"
+
             if hostname in self.connections:
                 try:
                     self.connections[hostname].sendall(command.encode())
@@ -419,15 +428,22 @@ class Server(QtWidgets.QMainWindow):
         else:
             print(f"No file found for package ID: {pkg_id}")
 
+
     def find_downloaded_file(self, pkg_id):
+
         package_dir = os.path.join("osfm-temp", pkg_id)
         if os.path.exists(package_dir):
-            for file in os.listdir(package_dir):
-                if file.endswith(".exe") or file.endswith(".msi"):
-                    return os.path.join(package_dir, file)
+        # Using os.walk to find files recursively (winget sometimes uses subdirs)
+            for root, _, files in os.walk(package_dir): 
+                for file in files:
+                    if file.endswith(".exe") or file.endswith(".msi"):
+                        return os.path.join(root, file)
         return None
 
+
+
     def create_install_software_gui(self):
+
         install_gui = QtWidgets.QDialog(self)
         install_gui.setWindowTitle("Install Software")
         install_gui.setGeometry(100, 100, 800, 600)
@@ -442,24 +458,39 @@ class Server(QtWidgets.QMainWindow):
         search_button = QtWidgets.QPushButton("Search", install_gui)
         search_button.clicked.connect(lambda: self.search_software(self.search_entry.text()))
         search_layout.addWidget(search_button)
+
         layout.addLayout(search_layout)
 
         self.software_buttons_frame = QtWidgets.QListWidget(install_gui)
-        self.software_buttons_frame.itemClicked.connect(self.toggle_selection)
+        #self.software_buttons_frame.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection) ## Not needed
+
+        self.software_buttons_frame.itemClicked.connect(self.toggle_selection) # Changed Click to itemClicked
+
+
         layout.addWidget(self.software_buttons_frame)
 
         install_button = QtWidgets.QPushButton("Install Selected", install_gui)
+
         install_button.clicked.connect(self.install_selected_software)
         layout.addWidget(install_button)
 
-        self.selected_software = set()
+
+        install_gui.setStyleSheet("QListWidget::item { border-bottom: 1px solid black; }") # Slightly better visualization
+
+
+
+        self.selected_software = set()  # initialize here
+
 
         install_gui.exec_()
 
-    def create_uninstall_software_gui(self):
+
+
+
+    def create_uninstall_software_gui(self):  # NEEDS ADJUSTMENT IF NOT USING WINGET IDS DIRECTLY
         uninstall_gui = QtWidgets.QDialog(self)
         uninstall_gui.setWindowTitle("Uninstall Software")
-        uninstall_gui.setGeometry(100, 100, 800, 600)
+        uninstall_gui.setGeometry(100, 100, 400, 100)  # Smaller dialog
 
         layout = QtWidgets.QVBoxLayout(uninstall_gui)
 
@@ -473,28 +504,43 @@ class Server(QtWidgets.QMainWindow):
 
         uninstall_gui.exec_()
 
-    def trigger_uninstall(self):
+    def trigger_uninstall(self): #Uninstall triggered here
         software_id = self.uninstall_entry.text()
+
         if software_id:
-            self.uninstall_software(software_id)
+            self.uninstall_software(software_id) # Calls the main uninstall with ID
         else:
             print("Please enter a software ID.")
-    
+
+
     def apply_styling(self):
+
         palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Window, QtGui.QColor(15, 15, 15))  
-        palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)  
+
+
+        palette.setColor(QtGui.QPalette.Window, QtGui.QColor(15, 15, 15))
+        palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
         palette.setColor(QtGui.QPalette.Base, QtGui.QColor(25, 25, 25))
-        palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))  
-        palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)  
-        palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)  
-        palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)  
-        palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))  
-        palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)  
-        palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)  
-        palette.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))  
-        palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))  
-        palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)  
+        palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
+        palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
+        palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
+
+
+
+        palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
+
+
+        palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
+        palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
+
+
+        palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
+
+
+        palette.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))
+
+        palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))
+        palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
 
         self.setPalette(palette)
 
@@ -534,7 +580,7 @@ class Server(QtWidgets.QMainWindow):
             }
         """)
 
-def uninstall_software(software_id):
+def uninstall_software(software_id):  # Redundant, but kept if you need local uninstall logic outside server class
     try:
         print(f"Uninstalling software with ID: {software_id}")
         result = subprocess.run(["winget", "uninstall", "--id", software_id], capture_output=True, text=True, check=True)
@@ -549,7 +595,8 @@ def uninstall_software(software_id):
     except Exception as e:
         print(f"Exception occurred while uninstalling software: {e}")
 
-def execute_command(command):
+
+def execute_command(command): # Redundant, may be useful later
     try:
         print(f"Executing command: {command}")
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
@@ -563,6 +610,7 @@ def execute_command(command):
         print(f"Error output: {e.stderr}")
     except Exception as e:
         print(f"Exception occurred while executing command: {e}")
+
 
 # Get the current network category (Private/Public)
 def get_network_category():
@@ -701,23 +749,24 @@ def connect_to_server(server_ip, port=12345):
         client_socket.close()
         return None
 
-# Install software using Winget (Redundant function but may be needed later)
-def install_software(file_path):
-    try:
-        print(f"Installing software from path: {file_path}")
-        result = subprocess.run(["winget", "install", file_path], capture_output=True, text=True, check=True)
-        if result.returncode == 0:
-            print(f"Installation succeeded: {result.stdout}")
-        else:
-            print(f"Installation failed with exit code {result.returncode}")
-            print(f"Error output: {result.stderr}")
-    except subprocess.CalledProcessError as e:
-        print(f"Installation command failed with exit code {e.returncode}")
-        print(f"Error output: {e.stderr}")
-    except Exception as e:
-        print(f"Exception occurred while installing software: {e}")
 
-# Download software from server and install
+def install_software(file_path):
+        if os.path.isdir(file_path):
+            files = os.listdir(file_path)
+            executables = [f for f in files if f.endswith(('.exe', '.msi'))]
+            if not executables:
+                print("No executable files found in the directory.")
+                return
+            for executable in executables:
+                full_path = os.path.join(file_path, executable)
+                print(f"Installing {full_path}...")
+                # Use Start-Process to execute the installer with the UNC path
+                command = f'cmd.exe /c "{full_path}" /quiet'
+                print(command)
+                subprocess.run(command)
+        else:
+            print(f"The path is not a directory: {file_path}")
+
 def download_and_install_software(server_ip, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
@@ -741,13 +790,13 @@ def main_client():
     client_socket = None
     local_hostname = get_local_hostname()
 
-    # Set up signal handling for graceful exit
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
 
     while True:
         if client_socket is None:
+           if client_socket is None:
             print("Searching for server...")
             server_ip = discover_server(port)
             if server_ip:
@@ -778,30 +827,35 @@ def main_client():
             else:
                 print("Retrying in 5 seconds...")
                 time.sleep(5)
+
         else:
             try:
                 response = client_socket.recv(1024).decode()
+
                 if response.startswith("FILE_PATH"):
                     file_path = response.split(" ")[1]
                     if file_path:
-                        if file_path.endswith('.exe'):
-                            install_cmd = f'powershell "./{file_path}/*.exe"'
-                        elif file_path.endswith('.msi'):
-                            install_cmd = f'powershell "./{file_path}/*.msi"'
+                        print(f"Received file path: {file_path}") #Debugging Info
+                        install_software(file_path)
+
+
                     else:
-                        print("No executable or MSI file found.")
-                    subprocess.run([install_cmd],check=True)
-                    
+                        print("FILE_PATH received but no valid path provided.") 
+
+
                 elif response.startswith("POWERSHELL"):
-                    ps_command = response.split(" ", 1)[1]  # Get everything after 'POWERSHELL'
-                    subprocess.run(["powershell", "-Command", ps_command], check=True)  # Make sure to handle exceptions
+                    ps_command = response.split(" ", 1)[1]
+                    subprocess.run(["powershell", "-Command", ps_command], check=True)
+
                 elif response == "CLOSE":
                     client_socket.close()
                     client_socket = None
                     print("Server closed the connection. Searching for server again...")
+
                 else:
                     print(f"Received unexpected response: {response}")
-            except ConnectionResetError:
+
+            except (ConnectionResetError, socket.error) as e:
                 print("Connection to server was forcibly closed. Reconnecting...")
                 client_socket.close()
                 client_socket = None
@@ -813,6 +867,7 @@ def main_client():
                 print(f"Unexpected error: {e}. Reconnecting...")
                 client_socket.close()
                 client_socket = None
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
