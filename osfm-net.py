@@ -1,12 +1,7 @@
 import subprocess
-import socket
-import time
-import os
-import signal
 import sys
-from PyQt5 import QtWidgets, QtCore, QtGui
-import threading
-from win10toast import ToastNotifier
+from PyQt5 import QtWidgets
+
 
 
 #OSFM Functions
