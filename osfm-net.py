@@ -8,15 +8,15 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
 from win10toast import ToastNotifier
 
-# Add the binaries folder to the system path
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'binaries'))
+# Add the osfmbinaries folder to the system path
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'osfmbinaries'))
 
 #OSFM Functions
-from binaries import *
-from binaries.utils import is_server_running, show_toast_notification, get_local_hostname, signal_handler, ensure_temp_folder_shared
-from binaries.server import Server
-from binaries.clientfunc import discover_server, connect_to_server, install_software, enable_rdp
-from binaries.client import main_client
+from osfmbinaries import *
+from osfmbinaries.utils import is_server_running, show_toast_notification, get_local_hostname, signal_handler, ensure_temp_folder_shared
+from osfmbinaries.server import Server
+from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software, enable_rdp
+from osfmbinaries.client import main_client
 
 host = subprocess.getoutput("hostname")
 
