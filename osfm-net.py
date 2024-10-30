@@ -2,8 +2,6 @@ import subprocess
 import sys
 from PyQt5 import QtWidgets
 
-
-
 #OSFM Functions
 from osfmbinaries import *
 from osfmbinaries.utils import is_server_running, show_toast_notification, get_local_hostname, signal_handler, ensure_temp_folder_shared
