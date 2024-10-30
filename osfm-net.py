@@ -4,12 +4,10 @@ from PyQt5 import QtWidgets
 
 #OSFM Functions
 from osfmbinaries import *
-from osfmbinaries.utils import is_server_running, show_toast_notification, get_local_hostname, signal_handler, ensure_temp_folder_shared
+from osfmbinaries.utils import is_server_running, ensure_temp_folder_shared
 from osfmbinaries.server import Server
-from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software, enable_rdp
+from osfmbinaries.clientfunc import enable_rdp
 from osfmbinaries.client import main_client
-
-host = subprocess.getoutput("hostname")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,9 @@ import socket
 import time
 import signal
 
+from osfmbinaries.utils import get_local_hostname, signal_handler
+from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software
+
 def main_client():
     port = 12345
     client_socket = None

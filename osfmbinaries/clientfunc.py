@@ -2,6 +2,7 @@ import subprocess
 import socket
 import os
 
+from osfmbinaries.utils import show_toast_notification
 
 def uninstall_software(software_id):  # Redundant, but kept if you need local uninstall logic outside server class
     try:
