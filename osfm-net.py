@@ -8,8 +8,6 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import threading
 from win10toast import ToastNotifier
 
-# Add the osfmbinaries folder to the system path
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'osfmbinaries'))
 
 #OSFM Functions
 from osfmbinaries import *
