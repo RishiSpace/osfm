@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
+import subprocess
 
 #OSFM Functions
 from osfmbinaries import *
@@ -7,6 +8,7 @@ from osfmbinaries.utils import is_server_running, ensure_temp_folder_shared
 from osfmbinaries.server import Server
 from osfmbinaries.clientfunc import enable_rdp
 from osfmbinaries.client import main_client
+
 
 
 if __name__ == "__main__":

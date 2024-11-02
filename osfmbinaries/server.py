@@ -4,7 +4,7 @@ import subprocess
 import socket
 import os
 
-
+host = subprocess.getoutput("hostname")
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
         super().__init__()
