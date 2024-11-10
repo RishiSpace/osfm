@@ -43,6 +43,6 @@ def ensure_temp_folder_shared():
     except Exception as e:
         print(f"Exception occurred: {e}")
 
-def show_toast_notification():
+def show_toast_notification(title, message):  # Updated to accept title and message
     toaster = ToastNotifier()
-    toaster.show_toast("OSFM-Control", "This system is currently being controlled by an Administrator", duration=10)
+    toaster.show_toast(title, message, duration=10)

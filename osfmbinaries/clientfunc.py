@@ -1,6 +1,7 @@
 import subprocess
 import socket
 import os
+import threading
 
 from osfmbinaries.utils import show_toast_notification
 
@@ -166,7 +167,7 @@ def connect_to_server(server_ip, port=12345):
         print(f"Sending hostname: {hostname}")
         client_socket.sendall(f"HOSTNAME {hostname}".encode())
         # Show the toast notification here
-        show_toast_notification()
+        show_toast_notification("OSFM-Control", "This system is currently being controlled by an Administrator")
         return client_socket
     except (socket.timeout, socket.error) as e:
         print(f"Failed to connect to server: {e}")
