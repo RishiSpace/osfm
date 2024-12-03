@@ -173,6 +173,7 @@ def connect_to_server(server_ip, port=12345):
         print(f"Failed to connect to server: {e}")
         client_socket.close()
         return None
+    
 
 
 def install_software(file_path):

@@ -3,7 +3,7 @@ import socket
 import time
 import signal
 
-from osfmbinaries.utils import get_local_hostname, signal_handler
+from osfmbinaries.utils import get_local_hostname, signal_handler, fix_windows
 from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software
 
 def main_client():
@@ -27,7 +27,7 @@ def main_client():
                 if client_socket:  # Ensure connection was successful
                     try:
                         # Receive the server's hostname from the first message
-                        server_hostname = client_socket.recv(1024).decode().split(" ")[1]
+                        server_hostname = client_socket.recv(1024).decode().split(" ")[0]
 
                         # Skip connecting if the server hostname is the same as the local hostname
                         if server_hostname == local_hostname:
@@ -68,6 +68,8 @@ def main_client():
                     ps_command = response.split(" ", 1)[1]
                     subprocess.run(["powershell", "-Command", ps_command], check=True)
 
+                elif response.startswith("FIX"):
+                    fix_windows()
                 elif response == "CLOSE":
                     client_socket.close()
                     client_socket = None

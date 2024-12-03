@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 from win10toast import ToastNotifier
+from plyer import notification
 
 def signal_handler(sig, frame):
     print("Exiting gracefully...")
@@ -44,5 +45,37 @@ def ensure_temp_folder_shared():
         print(f"Exception occurred: {e}")
 
 def show_toast_notification(title, message):  # Updated to accept title and message
-    toaster = ToastNotifier()
-    toaster.show_toast(title, message, duration=10)
+    notification.notify(
+        title=title,
+        message=message,
+        app_icon=None,  # e.g. 'C:\\icon_32x32.ico'
+        timeout=10,  # seconds
+    )
+
+def fix_windows():
+    try:
+            print("Running System File Checker (sfc)...")
+            sfc_result = subprocess.run(["sfc", "/scannow"], capture_output=True, text=True)
+            if sfc_result.returncode == 0:
+                print("sfc completed successfully.")
+                print(sfc_result.stdout)
+            else:
+                print("sfc encountered an error.")
+                print(sfc_result.stderr)
+
+
+            print("Running DISM to check the health of the Windows image...")
+            dism_check = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"], capture_output=True, text=True)
+            print(dism_check.stdout)
+            print("Running DISM to scan the Windows image for corruption...")
+            dism_scan = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"], capture_output=True, text=True)
+            print(dism_scan.stdout)
+            print("Running DISM to repair the Windows image...")
+            dism_repair = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"], capture_output=True, text=True)
+            print(dism_repair.stdout)
+            print("Windows fix process completed.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred: {e.stderr}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")

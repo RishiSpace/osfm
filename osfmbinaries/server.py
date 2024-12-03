@@ -230,33 +230,8 @@ class Server(QtWidgets.QMainWindow):
 
 
     def fix_windows(self):
-
-        try:
-            print("Running System File Checker (sfc)...")
-            sfc_result = subprocess.run(["sfc", "/scannow"], capture_output=True, text=True)
-            if sfc_result.returncode == 0:
-                print("sfc completed successfully.")
-                print(sfc_result.stdout)
-            else:
-                print("sfc encountered an error.")
-                print(sfc_result.stderr)
-
-
-            print("Running DISM to check the health of the Windows image...")
-            dism_check = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/CheckHealth"], capture_output=True, text=True)
-            print(dism_check.stdout)
-            print("Running DISM to scan the Windows image for corruption...")
-            dism_scan = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/ScanHealth"], capture_output=True, text=True)
-            print(dism_scan.stdout)
-            print("Running DISM to repair the Windows image...")
-            dism_repair = subprocess.run(["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"], capture_output=True, text=True)
-            print(dism_repair.stdout)
-            print("Windows fix process completed.")
-
-        except subprocess.CalledProcessError as e:
-            print(f"Error occurred: {e.stderr}")
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+        self.send_command(f"FIX")
+        
 
     def send_powershell(self):
         command = self.powershell_entry.text()
