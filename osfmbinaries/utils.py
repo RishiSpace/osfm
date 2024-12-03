@@ -4,6 +4,7 @@ import os
 import sys
 from win10toast import ToastNotifier
 from plyer import notification
+import threading
 
 def signal_handler(sig, frame):
     print("Exiting gracefully...")
@@ -45,12 +46,12 @@ def ensure_temp_folder_shared():
         print(f"Exception occurred: {e}")
 
 def show_toast_notification(title, message):  # Updated to accept title and message
-    notification.notify(
+    threading.Thread(notification.notify(
         title=title,
         message=message,
         app_icon=None,  # e.g. 'C:\\icon_32x32.ico'
         timeout=10,  # seconds
-    )
+    ))
 
 def fix_windows():
     try:
