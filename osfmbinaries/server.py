@@ -4,6 +4,7 @@ import subprocess
 import socket
 import os
 
+from osfmbinaries.utils import show_toast_notification
 host = subprocess.getoutput("hostname")
 class Server(QtWidgets.QMainWindow):
     def __init__(self, host="0.0.0.0", port=12345):
@@ -33,14 +34,23 @@ class Server(QtWidgets.QMainWindow):
         if username[1]:
             password = QtWidgets.QInputDialog.getText(self, "Create User", "Enter password:", QtWidgets.QLineEdit.Password)
             if password[1]:
-                command = f"New-LocalUser -Name '{username[0]}' -Password (ConvertTo-SecureString '{password[0]}' -AsPlainText -Force) -AccountNeverExpires; Add-LocalGroupMember -Group 'Administrators' -Member '{username[0]}'"
+                # Command to create a user and add to Administrators group
+                command = (
+                    f"net user {username[0]} {password[0]} /add ; "
+                    f"net localgroup Administrators {username[0]} /add"
+                )
                 self.send_command(f"POWERSHELL {command}")
+                self.send_command(f"TOASTC {username[0]}")
+                show_toast_notification("User Management",f"User {username[0]} Created")
 
     def delete_user(self):
         username = QtWidgets.QInputDialog.getText(self, "Delete User", "Enter username to delete:")
         if username[1]:
-            command = f"Remove-LocalUser -Name '{username[0]}'"
+            # Command to delete the user
+            command = f"net user {username[0]} /delete"
             self.send_command(f"POWERSHELL {command}")
+            self.send_command(f"TOASTD {username[0]}")
+            show_toast_notification("User Management",f"User {username[0]} Deleted")
 
     def setup_ui(self):
         self.setWindowTitle("OSFM Control Centre")

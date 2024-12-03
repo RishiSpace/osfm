@@ -3,7 +3,7 @@ import socket
 import time
 import signal
 
-from osfmbinaries.utils import get_local_hostname, signal_handler, fix_windows
+from osfmbinaries.utils import get_local_hostname, signal_handler, fix_windows, show_toast_notification
 from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software
 
 def main_client():
@@ -70,6 +70,15 @@ def main_client():
 
                 elif response.startswith("FIX"):
                     fix_windows()
+                
+                elif response.startswith("TOASTC"):
+                    user = response.split(" ",1)[1]
+                    show_toast_notification("User Management",f"User {user} has been created")
+                
+                elif response.startswith("TOASTD"):
+                    user = response.split(" ",1)[1]
+                    show_toast_notification("User Management",f"User {user} has been deleted")
+
                 elif response == "CLOSE":
                     client_socket.close()
                     client_socket = None
