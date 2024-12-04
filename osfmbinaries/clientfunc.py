@@ -175,7 +175,7 @@ def connect_to_server(server_ip, port=12345):
         return None
     
 def install_pro(file_path):
-    subprocess.run(f"powershell.exe {file_path}")
+    subprocess.run(f"cmd.exe /c {file_path}")
 
 def install_software(file_path):
         if os.path.isdir(file_path):

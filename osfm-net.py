@@ -1,6 +1,7 @@
 import sys
 from PyQt5 import QtWidgets
 import subprocess
+import os
 
 #OSFM Functions
 from osfmbinaries import *
@@ -20,7 +21,8 @@ if __name__ == "__main__":
         else:
             print("Starting server...")
             # Ensure the temp folder is shared before continuing
-            ensure_temp_folder_shared()
+            base_path = os.path.dirname(__file__)
+            ensure_temp_folder_shared(base_path)
             server = Server()
             sys.exit(app.exec_())
     else:

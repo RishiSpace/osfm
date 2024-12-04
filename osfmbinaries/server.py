@@ -349,10 +349,10 @@ class Server(QtWidgets.QMainWindow):
 
 
     def send_download_path(self, pkg_id, host, hostname):
-        file_path = self.find_downloaded_file(pkg_id)
+        file_path = pkg_id
         if file_path:
             # CRITICAL: Added "osfm-temp" share name here
-            formatted_path = f"\\{host}\\{file_path}"
+            formatted_path = f"\\{host}\\osfm-temp\\{file_path}"
             command = f"FILE_PATH {formatted_path}"
 
             if hostname in self.connections:

@@ -21,8 +21,11 @@ def is_server_running(port=12345):
 def get_local_hostname():
     return socket.gethostname()
 
-def ensure_temp_folder_shared():
-    temp_folder_path = os.path.join(os.path.dirname(__file__), "osfm-temp")  
+import os
+import subprocess
+
+def ensure_temp_folder_shared(base_path):
+    temp_folder_path = os.path.join(base_path, "osfm-temp")
     if not os.path.exists(temp_folder_path):
         os.makedirs(temp_folder_path)
 
@@ -44,6 +47,7 @@ def ensure_temp_folder_shared():
         print(f"Error sharing temp folder: {e}")
     except Exception as e:
         print(f"Exception occurred: {e}")
+
 
 def show_toast_notification(title, message):  # Updated to accept title and message
     threading.Thread(notification.notify(

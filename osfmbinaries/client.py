@@ -4,7 +4,7 @@ import time
 import signal
 
 from osfmbinaries.utils import get_local_hostname, signal_handler, fix_windows, show_toast_notification
-from osfmbinaries.clientfunc import discover_server, connect_to_server, install_pro
+from osfmbinaries.clientfunc import discover_server, connect_to_server, install_software
 
 def main_client():
     port = 12345
@@ -57,7 +57,7 @@ def main_client():
                     file_path = response.split(" ")[1]
                     if file_path:
                         print(f"Received file path: \{file_path}") #Debugging Info
-                        install_pro(f"\{file_path}")
+                        install_software(f"\{file_path}")
 
 
                     else:
