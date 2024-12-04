@@ -359,6 +359,7 @@ class Server(QtWidgets.QMainWindow):
                 try:
                     self.connections[hostname].sendall(command.encode())
                     print(f"Sent file path to {hostname}: {formatted_path}")
+                    show_toast_notification("Install Apps","App Path sent to all clients !")
                 except Exception as e:
                     print(f"Failed to send file path to {hostname}: {e}")
             else:
