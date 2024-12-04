@@ -246,6 +246,7 @@ class Server(QtWidgets.QMainWindow):
     def send_powershell(self):
         command = self.powershell_entry.text()
         self.send_command(f"POWERSHELL {command}")
+        show_toast_notification("PowerShell Execution",f"Script {command} was sent to all connected clients !")
 
     def update_clients_list(self):
         self.clients_list.clear()
@@ -351,7 +352,7 @@ class Server(QtWidgets.QMainWindow):
         file_path = self.find_downloaded_file(pkg_id)
         if file_path:
             # CRITICAL: Added "osfm-temp" share name here
-            formatted_path = f"\\{host}\\osfm-temp\\{file_path}"
+            formatted_path = f"\\{host}\\{file_path}"
             command = f"FILE_PATH {formatted_path}"
 
             if hostname in self.connections:
