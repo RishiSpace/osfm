@@ -8,7 +8,8 @@ from osfmbinaries.utils import show_toast_notification
 def uninstall_software(software_id):  # Redundant, but kept if you need local uninstall logic outside server class
     try:
         print(f"Uninstalling software with ID: {software_id}")
-        result = subprocess.run(["winget", "uninstall", "--id", software_id], capture_output=True, text=True, check=True)
+        uninst = (f"winget uninstall {software_id}")
+        result = subprocess.run(uninst, capture_output=True, text=True, check=True)
         if result.returncode == 0:
             print(f"Uninstall succeeded: {result.stdout}")
         else:
