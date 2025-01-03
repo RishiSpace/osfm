@@ -10,7 +10,8 @@ from osfmbinaries.server import Server
 from osfmbinaries.clientfunc import enable_rdp
 from osfmbinaries.client import main_client
 
-
+log_file = open('osfm-net.log', 'w')
+sys.stdout = log_file
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -29,3 +30,5 @@ if __name__ == "__main__":
         print("Starting as client...")
         enable_rdp()
         main_client()
+
+log_file.close()
