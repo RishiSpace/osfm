@@ -57,7 +57,12 @@ def main_client():
                     file_path = response.split(" ")[1]
                     if file_path:
                         print(f"Received file path: \{file_path}") #Debugging Info
-                        install_software(f"\{file_path}")
+                        try:
+                            install_software(f"\{file_path}")
+                            client_socket.sendall("200 OK".encode())
+                        except Exception as e:
+                            print(f"Error installing software: {e}")
+                            client_socket.sendall("500 ERROR".encode())
 
 
                     else:
@@ -66,18 +71,30 @@ def main_client():
 
                 elif response.startswith("POWERSHELL"):
                     ps_command = response.split(" ", 1)[1]
-                    subprocess.run(["powershell", "-Command", ps_command], check=True)
+                    try:
+                        subprocess.run(["powershell", "-Command", ps_command], check=True)
+                        client_socket.sendall("200 OK".encode())
+                    except subprocess.CalledProcessError as e:
+                        print(f"PowerShell command failed: {e}")
+                        client_socket.sendall("500 ERROR".encode())
 
                 elif response.startswith("FIX"):
-                    fix_windows()
+                    try:
+                        fix_windows()
+                        client_socket.sendall("200 OK".encode())
+                    except Exception as e:
+                        print(f"Error fixing windows: {e}")
+                        client_socket.sendall("500 ERROR".encode())
                 
                 elif response.startswith("TOASTC"):
                     user = response.split(" ",1)[1]
                     show_toast_notification("User Management",f"User {user} has been created")
+                    client_socket.sendall("200 OK".encode())
                 
                 elif response.startswith("TOASTD"):
                     user = response.split(" ",1)[1]
                     show_toast_notification("User Management",f"User {user} has been deleted")
+                    client_socket.sendall("200 OK".encode())
 
                 elif response == "CLOSE":
                     client_socket.close()

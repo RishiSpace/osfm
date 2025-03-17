@@ -113,6 +113,11 @@ class Server(QtWidgets.QMainWindow):
 
         layout.addLayout(powershell_layout)
 
+        # Progress Bar
+        self.progress_bar = QtWidgets.QProgressBar(self)
+        layout.addWidget(self.progress_bar)
+        self.progress_bar.setValue(0)
+
         self.clients_list = QtWidgets.QListWidget(self)
         layout.addWidget(self.clients_list)
 
@@ -165,9 +170,18 @@ class Server(QtWidgets.QMainWindow):
                 data = client_socket.recv(1024)
                 if not data:
                     break
-                print(f"Received from {hostname}: {data.decode()}")
-                if data.startswith(b"UPLOAD"):  # Likely not used, but kept for completeness if you need file uploads
-                    self.receive_file(client_socket)
+
+                message = data.decode()
+                print(f"Received from {hostname}: {message}")
+
+                if message == "200 OK":
+                    self.client_status[hostname] = "OK"
+                    self.update_progress()
+                elif message == "500 ERROR":
+                    self.client_status[hostname] = "ERROR"
+                    self.mark_client_error(hostname)
+                    self.update_progress()
+                elif data.startswith(b"UPLOAD"):                    self.receive_file(client_socket)
                 elif data.startswith(b"FILE_PATH"):  # NOT USED CURRENTLY
                     file_path = data.decode().split(" ", 1)[1]
                     self.handle_file_path(file_path)  # Potentially for future use
@@ -177,6 +191,7 @@ class Server(QtWidgets.QMainWindow):
             except Exception as e:
                 print(f"Client connection error: {e}")
                 break
+
         client_socket.close()
         if hostname in self.connections:
             del self.connections[hostname]
@@ -204,11 +219,24 @@ class Server(QtWidgets.QMainWindow):
 
 
     def send_command(self, command):
-        for conn in self.connections.values():
+        self.progress = 0
+        self.client_status = {}  # Reset client status
+        num_clients = len(self.connections)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setMaximum(num_clients)
+
+        if num_clients == 0:
+            return  # No clients connected, do nothing
+
+        for hostname, conn in self.connections.items():
+            self.client_status[hostname] = "PENDING"  # Initialize status
             try:
                 conn.sendall(command.encode())
             except Exception as e:
-                print(f"Failed to send command: {e}")
+                print(f"Failed to send command to {hostname}: {e}")
+                self.client_status[hostname] = "ERROR"
+                self.mark_client_error(hostname)
+                self.update_progress()
 
     def install_software(file_path):
         if os.path.isdir(file_path):
@@ -242,6 +270,17 @@ class Server(QtWidgets.QMainWindow):
     def fix_windows(self):
         self.send_command(f"FIX")
         
+
+    def update_progress(self):
+        completed = sum(1 for status in self.client_status.values() if status in ["OK", "ERROR"])
+        self.progress_bar.setValue(completed)
+
+    def mark_client_error(self, hostname):
+        for i in range(self.clients_list.count()):
+            item = self.clients_list.item(i)
+            if item.data(QtCore.Qt.UserRole) == hostname:
+                item.setForeground(QtCore.Qt.red)
+                break
 
     def send_powershell(self):
         command = self.powershell_entry.text()
