@@ -14,17 +14,8 @@ requires-python = ">=3.11"
 license = {text = "MIT"}
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.pdm]
-package_type = "wheel"
-
-[tool.pdm.dev-dependencies]
-dev = [
-    "pytest",
-    "flake8"
-]
-
-[tool.pdm.scripts]
-osfm = "osfm.__main__:main"
+[tool.setuptools]
+script-files = ["osfm/__main__.py"]

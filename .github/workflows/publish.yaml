@@ -1,12 +1,12 @@
 # filepath: .github/workflows/publish.yaml
-name: Publish to PyPI
+name: Publish OSFM Package
 
 on:
-  release:
-    types: [published]
   push:
     branches:
       - osfm-py
+    tags:
+      - 'v*'
 
 jobs:
   build-and-publish:
@@ -14,24 +14,24 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.11
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Install build tools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pdm
-          pdm install
+          pip install build twine
 
       - name: Build package
-        run: pdm build
-
-      - name: Install twine
-        run: python -m pip install twine
+        run: python -m build --sdist --wheel .
 
       - name: Publish package to PyPI
-        run: |
-          python -m twine upload dist/* -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
