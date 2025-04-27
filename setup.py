@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='osfm',
-    version='1.0-Net',
+    version='1.0.0',
     packages=find_packages(),
     install_requires=[
         'PyQt5',

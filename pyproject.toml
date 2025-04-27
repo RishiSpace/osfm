@@ -1,6 +1,6 @@
 [project]
 name = "osfm"
-version = "1.0-Net"
+version = "1.0.0"
 description = "OSFM - Network System Management Made Simple"
 authors = [
     {name = "Rishikesh Giridhar", email = "rishikesh.giridhar@outlook.com"}
