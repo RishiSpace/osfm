@@ -4,11 +4,11 @@ import subprocess
 import os
 
 #OSFM Functions
-from osfmbinaries import *
-from osfmbinaries.utils import is_server_running, ensure_temp_folder_shared
-from osfmbinaries.server import Server
-from osfmbinaries.clientfunc import enable_rdp
-from osfmbinaries.client import main_client
+from osfm import *
+from osfm.utils import is_server_running, ensure_temp_folder_shared
+from osfm.server import Server
+from osfm.clientfunc import enable_rdp
+from osfm.client import main_client
 
 log_file = open('osfm-net.log', 'w')
 sys.stdout = log_file

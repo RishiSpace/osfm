@@ -1,0 +1,29 @@
+# filepath: packagebuild.toml
+[project]
+name = "osfm"
+version = "1.0-Net"
+description = "OSFM - Network System Management Made Simple"
+authors = [
+    {name = "Rishikesh Giridhar", email = "rishikesh.giridhar@outlook.com"}
+]
+dependencies = [
+    "PyQt5",
+    "win10toast",
+    "plyer"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pdm]
+package_type = "wheel"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest",
+    "flake8"
+]
+
+[tool.pdm.scripts]
+osfm = "osfm.__main__:main"

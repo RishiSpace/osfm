@@ -1,8 +1,0 @@
-Starting server...
-Temp folder is already shared.
-UDP listener started
-TCP server started, waiting for connections...
-Sent response to ('192.168.152.136', 56764)
-Client HOSTNAME RSE-VM (('192.168.152.136', 50481)) connected
-Received from HOSTNAME RSE-VM: 200 OK
-Received from HOSTNAME RSE-VM: 200 OK
