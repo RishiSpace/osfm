@@ -9,7 +9,7 @@ dependencies = [
     "PyQt5",
     "win10toast",
     "plyer",
-    'pywin32; platform_system == "Windows"'
+    "pywin32"
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
