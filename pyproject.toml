@@ -8,7 +8,8 @@ authors = [
 dependencies = [
     "PyQt5",
     "win10toast",
-    "plyer"
+    "plyer",
+    'pywin32; platform_system == "Windows"'
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
