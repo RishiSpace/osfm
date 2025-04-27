@@ -1,6 +1,6 @@
 [project]
 name = "osfm"
-version = "1.0.1"
+version = "1.0.2"
 description = "OSFM - Network System Management Made Simple"
 authors = [
     {name = "Rishikesh Giridhar", email = "rishikesh.giridhar@outlook.com"}
@@ -20,3 +20,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 script-files = ["osfm/__main__.py"]
+
+[project.urls]
+Homepage = "https://osfm-site.vercel.app/"
+Repository = "https://github.com/RishiSpace/osfm/tree/osfm-py"
