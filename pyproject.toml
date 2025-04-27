@@ -1,6 +1,6 @@
 [project]
 name = "osfm"
-version = "1.0.0"
+version = "1.0.1"
 description = "OSFM - Network System Management Made Simple"
 authors = [
     {name = "Rishikesh Giridhar", email = "rishikesh.giridhar@outlook.com"}
@@ -11,7 +11,8 @@ dependencies = [
     "plyer",
 ]
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = {file = "LICENSE"}  # Changed to LICENSE.txt
+readme = "README.md"  # Added readme
 
 [build-system]
 requires = ["setuptools", "wheel"]
