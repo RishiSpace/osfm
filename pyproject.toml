@@ -10,7 +10,7 @@ dependencies = [
     "win10toast",
     "plyer"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 
 [build-system]
