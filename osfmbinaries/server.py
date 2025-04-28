@@ -24,6 +24,12 @@ class Server(QtWidgets.QMainWindow):
     def enable_internet(self):
         command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ResetServerAddresses"
         self.send_command(f"POWERSHELL {command}")
+    
+    def share_internet(self):
+        server_ip = self.server_ip  # Use the server's IP address
+        command = f"SET_DNS {server_ip}"
+        self.send_command(f"POWERSHELL {command}")
+        show_toast_notification("Internet Sharing", f"Shared Internet with all clients using DNS: {server_ip}")
 
     def disable_internet(self):
         command = "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses '0.0.0.0'"
@@ -79,11 +85,15 @@ class Server(QtWidgets.QMainWindow):
         self.enable_button = QtWidgets.QPushButton('Enable Internet', self)
         self.enable_button.clicked.connect(self.enable_internet)
 
+        self.share_internet_button = QtWidgets.QPushButton('Share Internet', self)
+        self.share_internet_button.clicked.connect(self.share_internet)
+
         self.disable_button = QtWidgets.QPushButton('Disable Internet', self)
         self.disable_button.clicked.connect(self.disable_internet)
 
         # Add buttons to layout
         button_layout.addWidget(self.enable_button)
+        button_layout.addWidget(self.share_internet_button)
         button_layout.addWidget(self.disable_button)
 
         # Create buttons for user management

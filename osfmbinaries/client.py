@@ -101,6 +101,16 @@ def main_client():
                     client_socket = None
                     print("Server closed the connection. Searching for server again...")
 
+                elif response.startswith("SET_DNS"):
+                    dns_ip = response.split(" ")[1]
+                    try:
+                        subprocess.run(["powershell", "-Command", f"Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses {dns_ip}"], check=True)
+                        client_socket.sendall("200 OK".encode())
+                        print(f"DNS set to {dns_ip}")
+                    except subprocess.CalledProcessError as e:
+                        print(f"Failed to set DNS: {e}")
+                        client_socket.sendall("500 ERROR".encode())
+
                 else:
                     print(f"Received unexpected response: {response}")
 
