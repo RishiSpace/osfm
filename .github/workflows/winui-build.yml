@@ -91,7 +91,7 @@ jobs:
             $gh = Join-Path $gen 'App.xaml.g.h'
             if (Test-Path $gh) { Get-Content $gh -TotalCount 40 } else { Write-Host "MISSING: $gh" }
             Write-Host "===== $app : grep App_base across Generated Files ====="
-            if (Test-Path $gen) { Select-String -Path (Join-Path $gen '*') -Pattern 'struct App_base|using App_base|App_base' -Recurse | Select-Object Path, LineNumber, Line | Format-Table -AutoSize -Wrap }
+            if (Test-Path $gen) { Get-ChildItem $gen -Recurse -File | Select-String -Pattern 'struct App_base|using App_base' | Select-Object Path, LineNumber, Line | Format-Table -AutoSize -Wrap }
             Write-Host "===== $app : winrt projection headers listing ====="
             $w = Join-Path $gen 'winrt'
             if (Test-Path $w) { Get-ChildItem $w -File | Select-Object Name, Length | Format-Table -AutoSize }
