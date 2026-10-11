@@ -26,6 +26,10 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- /std:c++20 forced via AdditionalOptions: MSBuild may drop the
+           LanguageStandard enum (VS18 + v143), which silently compiles as
+           C++14 and breaks <filesystem>, WinRT headers, inline constexpr. -->
+      <AdditionalOptions>/std:c++20 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>

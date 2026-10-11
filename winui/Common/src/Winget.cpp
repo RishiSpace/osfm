@@ -12,6 +12,8 @@
 #include <cctype>
 #include <cwctype>
 #include <filesystem>
+#include <string>
+#include <vector>
 
 namespace osfm::winget {
 

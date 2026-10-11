@@ -1,12 +1,14 @@
 // Logger.cpp — rolling file + debugger + UI sink log.
 
 #include "Logger.h"
+#include "NetUtils.h" // ToWide: log file is UTF-16, lines are UTF-8
 
 #include <chrono>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
+#include <string>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -40,7 +42,8 @@ static void Emit(const char* lvl, const std::string& msg) {
         std::lock_guard<std::mutex> lk(g_mutex);
         ui = g_ui;
         if (g_file.is_open()) {
-            g_file << line.c_str() << L"\n";
+            // wofstream has no operator<<(const char*): convert first.
+            g_file << net::ToWide(line) << L'\n';
             g_file.flush();
         }
     }
@@ -53,8 +56,8 @@ static void Emit(const char* lvl, const std::string& msg) {
 void Init(const std::wstring& filePath) {
     std::lock_guard<std::mutex> lk(g_mutex);
     if (g_file.is_open()) g_file.close();
-    // std::filesystem::path bridges wchar_t paths on MSVC and libstdc++.
-    g_file.open(std::filesystem::path(filePath), std::ios::app);
+    // MSVC's wofstream::open takes (const wchar_t*) — pass c_str() directly.
+    g_file.open(filePath.c_str(), std::ios::app);
 }
 
 void SetUiSink(Sink sink) {
