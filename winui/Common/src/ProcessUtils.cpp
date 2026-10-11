@@ -40,7 +40,8 @@ Result RunCapture(const std::wstring& commandLine, unsigned long timeoutMs) {
     si.hStdError = we;
     PROCESS_INFORMATION pi{};
     std::wstring cmd = commandLine; // CreateProcess may mutate
-    if (!::CreateProcessW(nullptr, cmd.data(), nullptr, nullptr, TRUE,
+    // &cmd[0]: writable buffer; cmd.data() is const-qualified (strictStrings).
+    if (!::CreateProcessW(nullptr, cmd.empty() ? nullptr : &cmd[0], nullptr, nullptr, TRUE,
                           CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
         ::CloseHandle(ro); ::CloseHandle(wo);
         ::CloseHandle(re); ::CloseHandle(we);
@@ -64,7 +65,7 @@ bool StartDetached(const std::wstring& commandLine) {
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi{};
     std::wstring cmd = commandLine;
-    bool ok = !!::CreateProcessW(nullptr, cmd.data(), nullptr, nullptr, FALSE,
+    bool ok = !!::CreateProcessW(nullptr, cmd.empty() ? nullptr : &cmd[0], nullptr, nullptr, FALSE,
                                  DETACHED_PROCESS, nullptr, nullptr, &si, &pi);
     if (ok) { ::CloseHandle(pi.hProcess); ::CloseHandle(pi.hThread); }
     return ok;

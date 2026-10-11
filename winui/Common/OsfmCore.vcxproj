@@ -26,6 +26,11 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Force C++20 explicitly: the LanguageStandard enum is silently
+           dropped in this solution (C++14 default), and the WinAppSDK/CppWinRT
+           props inject /std:c++17. An explicit AdditionalOptions flag wins.
+           %(AdditionalOptions) LAST so command-line /p: switches still win. -->
+      <AdditionalOptions>%(AdditionalOptions) /std:c++20 /Zc:__cplusplus</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
