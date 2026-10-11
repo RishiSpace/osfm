@@ -8,6 +8,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1B2C3D4-3333-4000-8000-000000000003}</ProjectGuid>
+    <!-- See ServerApp.vcxproj: RootNamespace drives XamlMetaDataProvider.idl. -->
+    <RootNamespace>OSFM.ClientApp</RootNamespace>
     <!-- Plain Win32 Desktop app (NOT UWP): see ServerApp.vcxproj note. -->
     <AppxPackage>false</AppxPackage>
     <WindowsPackageType>None</WindowsPackageType>

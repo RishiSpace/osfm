@@ -8,6 +8,12 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1B2C3D4-2222-4000-8000-000000000002}</ProjectGuid>
+    <!-- RootNamespace feeds the XAML compiler: it generates
+         XamlMetaDataProvider.idl with `namespace <RootNamespace>`.
+         Without it the generated file has an empty namespace block and
+         MIDL fails with MIDL2025 "expecting NamespaceTag near {:" --
+         must match the x:Class roots in App.xaml / MainWindow.xaml. -->
+    <RootNamespace>OSFM.ServerApp</RootNamespace>
     <!-- Plain Win32 Desktop app (NOT UWP): windows-latest runners only carry
          the Desktop C++ toolset. WinUI 3/WinAppSDK arrives via PackageReference.
          ApplicationType=Windows Store would demand the UWP toolset (MSB8020). -->
