@@ -77,6 +77,27 @@ jobs:
           /p:AppxPackage=false
           /p:WindowsAppSDKSelfContained=true
 
+      - name: Dump codegen forensics (App_base hunt)
+        if: always()
+        run: |
+          $ErrorActionPreference = 'Continue'
+          foreach ($app in 'ServerApp','ClientApp') {
+            $proj = if ($app -eq 'ServerApp') { 'winui/Server/ServerApp' } else { 'winui/Client/ClientApp' }
+            $gen = Join-Path $proj 'Generated Files'
+            Write-Host "===== $app : Generated Files tree ====="
+            if (Test-Path $gen) { Get-ChildItem $gen -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize }
+            else { Write-Host "NO Generated Files dir under $proj" }
+            Write-Host "===== $app : App.xaml.g.h (first 40 lines) ====="
+            $gh = Join-Path $gen 'App.xaml.g.h'
+            if (Test-Path $gh) { Get-Content $gh -TotalCount 40 } else { Write-Host "MISSING: $gh" }
+            Write-Host "===== $app : grep App_base across Generated Files ====="
+            if (Test-Path $gen) { Select-String -Path (Join-Path $gen '*') -Pattern 'struct App_base|using App_base|App_base' -Recurse | Select-Object Path, LineNumber, Line | Format-Table -AutoSize -Wrap }
+            Write-Host "===== $app : winrt projection headers listing ====="
+            $w = Join-Path $gen 'winrt'
+            if (Test-Path $w) { Get-ChildItem $w -File | Select-Object Name, Length | Format-Table -AutoSize }
+            else { Write-Host "NO winrt dir under $gen" }
+          }
+
       - name: Locate + stage EXEs
         id: stage
         run: |
