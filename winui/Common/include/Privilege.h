@@ -20,7 +20,7 @@ bool EnsureSmbShare(const std::wstring& shareName, const std::wstring& path);
 bool EnsureFirewallRule(unsigned short port);
 
 // RDP enable: Private profile + fDenyTSConnections=0 + firewall group + TermService restart.
-bool EnableRdp(std::wstring* log = nullptr);
+bool EnableRdp(std::string* log = nullptr);
 
 // DNS helpers executed on the CLIENT via POWERSHELL transport (kept here for reuse/tests).
 std::string DnsResetCommand();              // ResetServerAddresses

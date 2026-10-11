@@ -38,7 +38,7 @@ bool EnsureSmbShare(const std::wstring& shareName, const std::wstring& path) {
     SHARE_INFO_502 si{};
     si.shi502_netname = const_cast<LPWSTR>(shareName.c_str());
     si.shi502_type = STYPE_DISKTREE;
-    si.shi502_remark = L"OSFM software staging";
+    si.shi502_remark = const_cast<LPWSTR>(L"OSFM software staging");
     si.shi502_permissions = ACCESS_ALL;
     si.shi502_max_uses = static_cast<DWORD>(-1);
     si.shi502_path = const_cast<LPWSTR>(path.c_str());
@@ -63,7 +63,7 @@ bool EnsureFirewallRule(unsigned short port) {
            proc::RunCapture(udp).exitCode == 0;
 }
 
-bool EnableRdp(std::wstring* log) {
+bool EnableRdp(std::string* log) {
     // Parity with enable_rdp(): Private profile -> fDenyTSConnections=0 ->
     // firewall group -> restart TermService.
     std::wstring ps =
@@ -74,7 +74,8 @@ bool EnableRdp(std::wstring* log) {
         L"Enable-NetFirewallRule -DisplayGroup 'Remote Desktop'; "
         L"Restart-Service -Name 'TermService' -Force";
     auto r = proc::RunPowerShell(ps, 120000);
-    if (log) *log = r.out + r.err; // narrow output: log directly, no ToNarrow
+    if (log) *log = r.out + r.err; // narrow process output into narrow log
+    return r.exitCode == 0;
     return r.exitCode == 0;
 }
 
@@ -116,7 +117,7 @@ bool IsElevated() { return false; }
 bool EnsureElevated(const wchar_t*) { return false; }
 bool EnsureSmbShare(const std::wstring&, const std::wstring&) { return false; }
 bool EnsureFirewallRule(unsigned short) { return false; }
-bool EnableRdp(std::wstring*) { return false; }
+bool EnableRdp(std::string*) { return false; }
 std::string DnsResetCommand() { return {}; }
 std::string DnsDisableCommand() { return {}; }
 std::string DnsSetCommand(const std::string&) { return {}; }
