@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MSIX manifest: ServerApp. runFullTrust for Winsock/registry/process control. -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+  <Identity Name="OSFM.ServerApp" Publisher="CN=OSFM" Version="1.3.0.0"/>
+  <Properties>
+    <DisplayName>OSFM Control Centre</DisplayName>
+    <PublisherDisplayName>OSFM</PublisherDisplayName>
+    <Description>Network-wide Windows administration console.</Description>
+  </Properties>
+  <Resources><Resource Language="en-us"/></Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0"/>
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust"/>
+    <Capability Name="privateNetworkClientServer"/>
+    <Capability Name="internetClient"/>
+  </Capabilities>
+  <Applications>
+    <Application Id="Server" Executable="ServerApp.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="OSFM Control Centre" Description="OSFM server console"
+        BackgroundColor="transparent" Square44x44Logo="Assets\icon.png" Square150x150Logo="Assets\icon.png"/>
+    </Application>
+  </Applications>
+</Package>
