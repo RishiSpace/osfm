@@ -14,6 +14,12 @@
          XAML .xaml.g.h has no base to derive from -> C2039). Template sets
          this; hand-written projects must set it explicitly. -->
     <CppWinRTProjectLanguage>C++/WinRT</CppWinRTProjectLanguage>
+    <!-- Copy the merged $(RootNamespace).winmd to $(OutDir): the XAML
+         compiler's MarkupCompilePass2 resolves it ONLY at
+         $(OutDir)$(RootNamespace).winmd, i.e. winmd must sit next to the
+         exe (WMC1006/WMC9999 otherwise). Keep OutDir shared per-project so
+         the workflow staging paths are unchanged. -->
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <!-- RootNamespace feeds the XAML compiler: it generates
          XamlMetaDataProvider.idl with the matching namespace block.
          Without it the generated file has an empty namespace and

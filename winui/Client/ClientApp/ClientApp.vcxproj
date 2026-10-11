@@ -10,6 +10,9 @@
     <ProjectGuid>{A1B2C3D4-3333-4000-8000-000000000003}</ProjectGuid>
     <!-- See ServerApp.vcxproj: marks this as C++/WinRT XAML (not C++/CX). -->
     <CppWinRTProjectLanguage>C++/WinRT</CppWinRTProjectLanguage>
+    <!-- See ServerApp.vcxproj: copy merged winmd next to the exe for
+         MarkupCompilePass2 (WMC1006/WMC9999 otherwise). -->
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <!-- See ServerApp.vcxproj: RootNamespace drives XamlMetaDataProvider.idl. -->
     <RootNamespace>OSFM.ClientApp</RootNamespace>
     <!-- See ServerApp.vcxproj: template-faithful WinUI 3 unpackaged app. -->
