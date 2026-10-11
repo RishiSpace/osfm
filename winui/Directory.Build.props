@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NuGet restore fix for UWP-typed C++ projects using PackageReference.
+     ApplicationType Windows Store (required for XAML .g.h codegen) makes
+     NuGet build-time validation demand a UAP TargetFramework that vcxproj
+     cannot express, failing with: Your project does not reference
+     UAP,Version=v10.0 in the TargetFrameworks property.
+     Setting ResolveNuGetPackages false disables that legacy UWP resolution
+     path; the explicit msbuild /t:Restore step (PackageReference assets)
+     still feeds the build. Same fix as microsoft/react-native-windows. -->
+<Project>
+  <PropertyGroup Label="NuGet" Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+  </PropertyGroup>
+</Project>
