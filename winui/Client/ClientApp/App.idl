@@ -1,8 +1,0 @@
-namespace OSFM.ClientApp
-{
-    [default_interface]
-    runtimeclass App : Microsoft.UI.Xaml.Application
-    {
-        App();
-    }
-}
