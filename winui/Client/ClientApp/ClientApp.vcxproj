@@ -13,6 +13,8 @@
     <!-- See ServerApp.vcxproj: copy merged winmd next to the exe for
          MarkupCompilePass2 (WMC1006/WMC9999 otherwise). -->
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <!-- See ServerApp.vcxproj: merge full RootNamespace (OSFM.ClientApp.winmd). -->
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <!-- See ServerApp.vcxproj: RootNamespace drives XamlMetaDataProvider.idl. -->
     <RootNamespace>OSFM.ClientApp</RootNamespace>
     <!-- See ServerApp.vcxproj: template-faithful WinUI 3 unpackaged app. -->

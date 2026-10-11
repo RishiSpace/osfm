@@ -20,6 +20,11 @@
          exe (WMC1006/WMC9999 otherwise). Keep OutDir shared per-project so
          the workflow staging paths are unchanged. -->
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <!-- Merge depth = full RootNamespace segments: mdmerge defaults to -n:1
+         for XAML projects, emitting OSFM.winmd, while XAML Pass2 resolves
+         $(OutDir)$(RootNamespace).winmd (OSFM.ServerApp.winmd). Auto-merge
+         sets depth from RootNamespace (2 segments -> correct filename). -->
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <!-- RootNamespace feeds the XAML compiler: it generates
          XamlMetaDataProvider.idl with the matching namespace block.
          Without it the generated file has an empty namespace and
