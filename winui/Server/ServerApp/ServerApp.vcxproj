@@ -14,10 +14,18 @@
          MIDL fails with MIDL2025 (expecting NamespaceTag).
          Must match the x:Class roots in App.xaml / MainWindow.xaml. -->
     <RootNamespace>OSFM.ServerApp</RootNamespace>
-    <!-- Plain Win32 Desktop app (NOT UWP): windows-latest runners only carry
-         the Desktop C++ toolset. WinUI 3/WinAppSDK arrives via PackageReference.
-         ApplicationType=Windows Store would demand the UWP toolset (MSB8020). -->
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <UseWinUI>true</UseWinUI>
+    <!-- WinUI 3 unpackaged desktop app (template-faithful). ApplicationType
+         Windows Store + UseWinUI drive the XAML compiler (.g.h generation).
+         WindowsPackageType None + AppxPackage/AppContainer false means an
+         unpackaged EXE. Requires the UWP C++ toolset, so CI pins
+         windows-2022 (windows-latest dropped it). -->
     <AppxPackage>false</AppxPackage>
+    <AppContainerApplication>false</AppContainerApplication>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -42,8 +50,6 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <!-- See OsfmCore.vcxproj: force the standard flag explicitly. -->
-      <AdditionalOptions>/std:c++20 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>OsfmCore.lib;Ws2_32.lib;Netapi32.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -71,7 +77,11 @@
     </ClCompile>
     <ClCompile Include="App.xaml.cpp"/>
     <ClCompile Include="MainWindow.xaml.cpp"/>
-    <ClCompile Include="TcpServer.cpp"/>
+    <!-- Engine TUs use the OsfmCore include dir directly and skip the app PCH
+         (they have no pch.h include; else C1010). -->
+    <ClCompile Include="TcpServer.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <Midl Include="MainWindow.idl"/>
     <Page Include="App.xaml"/>
     <Page Include="MainWindow.xaml"/>

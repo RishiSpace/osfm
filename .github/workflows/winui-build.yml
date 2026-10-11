@@ -1,7 +1,11 @@
-name: Build WinUI3 (windows-latest) + Release EXEs
+name: Build WinUI3 (windows-2022) + Release EXEs
 
-# Builds OsfmCore + ServerApp + ClientApp on windows-latest and publishes
-# osfm-server.exe / osfm-client.exe to GitHub Releases.
+# Builds OsfmCore + ServerApp + ClientApp and publishes osfm-server.exe /
+# osfm-client.exe to GitHub Releases. Runner is pinned to windows-2022:
+# template-faithful WinUI 3 unpackaged apps need ApplicationType=Windows
+# Store + UseWinUI (drives XAML .g.h codegen), which requires the UWP C++
+# toolset that only windows-2022 still ships (windows-latest = VS18 without
+# it -> MSB8020). The apps remain unpackaged EXEs (WindowsPackageType None).
 #
 # Triggers:
 #   - push of a version tag  (v*  -> creates/updates that Release)
@@ -47,8 +51,8 @@ env:
 
 jobs:
   build:
-    name: Build + package (windows-latest)
-    runs-on: windows-latest
+    name: Build + package (windows-2022)
+    runs-on: windows-2022
     defaults:
       run:
         shell: pwsh
