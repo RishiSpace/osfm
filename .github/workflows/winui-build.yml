@@ -92,6 +92,9 @@ jobs:
             if (Test-Path $gh) { Get-Content $gh -TotalCount 40 } else { Write-Host "MISSING: $gh" }
             Write-Host "===== $app : grep App_base across Generated Files ====="
             if (Test-Path $gen) { Get-ChildItem $gen -Recurse -File | Select-String -Pattern 'struct App_base|using App_base' | Select-Object Path, LineNumber, Line | Format-Table -AutoSize -Wrap }
+            Write-Host "===== $app : sources/App.h (cppwinrt impl stub) ====="
+            $stub = Join-Path $gen 'sources\App.h'
+            if (Test-Path $stub) { Get-Content $stub } else { Write-Host "MISSING: $stub" }
             Write-Host "===== $app : winrt projection headers listing ====="
             $w = Join-Path $gen 'winrt'
             if (Test-Path $w) { Get-ChildItem $w -File | Select-Object Name, Length | Format-Table -AutoSize }
