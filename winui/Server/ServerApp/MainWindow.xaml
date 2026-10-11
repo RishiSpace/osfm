@@ -1,0 +1,65 @@
+<Window
+    x:Class="OSFM.ServerApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="OSFM Control Centre">
+
+    <!-- Windows 11 Fluent look: dark backdrop, rounded command bar. -->
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="OSFM Control Centre" Style="{StaticResource TitleTextBlockStyle}"/>
+
+        <CommandBar Grid.Row="1" DefaultLabelPosition="Right" Background="Transparent">
+            <AppBarButton x:Name="InstallBtn"    Icon="Download"   Label="Install"/>
+            <AppBarButton x:Name="UninstallBtn"  Icon="Delete"     Label="Uninstall"/>
+            <AppBarButton x:Name="FixBtn"        Icon="Repair"     Label="Fix Windows"/>
+            <AppBarSeparator/>
+            <AppBarButton x:Name="NetOnBtn"      Icon="Globe"      Label="Enable net"/>
+            <AppBarButton x:Name="NetShareBtn"   Icon="Share"      Label="Share net"/>
+            <AppBarButton x:Name="NetOffBtn"     Icon="BlockedSite" Label="Disable net"/>
+            <AppBarSeparator/>
+            <AppBarButton x:Name="AddUserBtn"    Icon="AddFriend"  Label="Create user"/>
+            <AppBarButton x:Name="DelUserBtn"    Icon="RemoveFriend" Label="Delete user"/>
+        </CommandBar>
+
+        <Grid Grid.Row="2" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="PowerShell:" VerticalAlignment="Center"/>
+            <TextBox x:Name="PsBox" Grid.Column="1"
+                     PlaceholderText="PowerShell command to broadcast…"/>
+            <Button x:Name="PsSendBtn" Grid.Column="2" Content="Send" Style="{StaticResource AccentButtonStyle}"/>
+        </Grid>
+
+        <!-- Client list: double-tap row -> mstsc /v:<host> (parity with rdp_to_client). -->
+        <ListView x:Name="ClientsView" Grid.Row="3" SelectionMode="Single"
+                  IsDoubleTapEnabled="True">
+            <ListView.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="Connected clients (double-click for RDP)" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                </DataTemplate>
+            </ListView.HeaderTemplate>
+        </ListView>
+
+        <Grid Grid.Row="4" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="LogBox" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" MaxHeight="140"
+                     PlaceholderText="Event log…"/>
+            <ProgressBar x:Name="AckBar" Grid.Column="1" Minimum="0" Maximum="1" Value="0"/>
+        </Grid>
+    </Grid>
+</Window>

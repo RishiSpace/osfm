@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OsfmCore static lib: protocol, sockets, privilege, winget, toast, log. -->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1B2C3D4-1111-4000-8000-000000000001}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
+  <PropertyGroup>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <LanguageStandard>stdcpp20</LanguageStandard>
+    <OutDir>$(SolutionDir)x64\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)x64\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <TargetName>OsfmCore</TargetName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\OsfmProtocol.h"/>
+    <ClInclude Include="include\NetUtils.h"/>
+    <ClInclude Include="include\Privilege.h"/>
+    <ClInclude Include="include\ProcessUtils.h"/>
+    <ClInclude Include="include\Winget.h"/>
+    <ClInclude Include="include\Toast.h"/>
+    <ClInclude Include="include\Logger.h"/>
+    <ClCompile Include="src\NetUtils.cpp"/>
+    <ClCompile Include="src\Privilege.cpp"/>
+    <ClCompile Include="src\ProcessUtils.cpp"/>
+    <ClCompile Include="src\Winget.cpp"/>
+    <ClCompile Include="src\Toast.cpp"/>
+    <ClCompile Include="src\Logger.cpp"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+</Project>

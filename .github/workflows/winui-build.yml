@@ -1,0 +1,139 @@
+name: Build WinUI3 (windows-latest) + Release EXEs
+
+# Builds OsfmCore + ServerApp + ClientApp on windows-latest and publishes
+# osfm-server.exe / osfm-client.exe to GitHub Releases.
+#
+# Triggers:
+#   - push of a version tag  (v*  -> creates/updates that Release)
+#   - manual dispatch        (creates/updates `winui-latest` or the chosen tag)
+#   - main-branch pushes + PRs touching winui/** (compile check only, no upload)
+#
+# Design notes (per ~/LLMG/opt_guide.md + security_checklist.md):
+#   - Least privilege: GITHUB_TOKEN gets contents:write only (needed for Releases).
+#   - No secrets in the workflow; no PII in logs (build output only).
+#   - MSBuild warnings are surfaced but fail the job only on errors (/warnaserror-).
+#   - Release assets are checksummed (SHA256SUMS.txt) so downloads are verifiable.
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+    paths:
+      - "winui/**"
+      - ".github/workflows/winui-build.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "winui/**"
+      - ".github/workflows/winui-build.yml"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to publish to (default: winui-latest)"
+        required: false
+        default: "winui-latest"
+
+permissions:
+  contents: write # required to create/update Releases
+
+env:
+  SOLUTION: winui/OSFM-Net.sln
+  CONFIG: Release
+  PLATFORM: x64
+  WINAPP_RUNTIME_VERSION: 1.5.240627000
+
+jobs:
+  build:
+    name: Build + package (windows-latest)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet (PackageReference)
+        run: msbuild $env:SOLUTION /t:Restore /p:Configuration=$env:CONFIG /p:Platform=$env:PLATFORM /v:minimal
+
+      - name: Build solution (Release|x64)
+        run: >
+          msbuild $env:SOLUTION
+          /p:Configuration=$env:CONFIG
+          /p:Platform=$env:PLATFORM
+          /m /v:minimal
+          /p:AppxPackage=false
+          /p:WindowsAppSDKSelfContained=true
+
+      - name: Locate + stage EXEs
+        id: stage
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Expected outputs given OutDir in the vcxproj files:
+          $serverDir = "winui/x64/$env:CONFIG/ServerApp"
+          $clientDir = "winui/x64/$env:CONFIG/ClientApp"
+          $serverExe = Get-ChildItem -Path $serverDir -Filter ServerApp.exe -Recurse | Select-Object -First 1
+          $clientExe = Get-ChildItem -Path $clientDir -Filter ClientApp.exe -Recurse | Select-Object -First 1
+          if (-not $serverExe) { throw "ServerApp.exe not found under $serverDir" }
+          if (-not $clientExe) { throw "ClientApp.exe not found under $clientDir" }
+          Write-Host "Server: $($serverExe.FullName)"
+          Write-Host "Client: $($clientExe.FullName)"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          # Ship the exe plus its adjacent runtime DLLs (self-contained WinAppSDK).
+          Copy-Item "$($serverExe.DirectoryName)\*" dist/server-bundle/ -Recurse -Force
+          Copy-Item "$($clientExe.DirectoryName)\*" dist/client-bundle/ -Recurse -Force
+          Rename-Item dist/server-bundle/ServerApp.exe osfm-server.exe
+          Rename-Item dist/client-bundle/ClientApp.exe osfm-client.exe
+          Copy-Item dist/server-bundle/osfm-server.exe dist/osfm-server.exe -Force
+          Copy-Item dist/client-bundle/osfm-client.exe dist/osfm-client.exe -Force
+          # Installer helpers ship alongside.
+          Copy-Item winui/Installer/*.ps1 dist/ -Force
+          # Checksums for verifiability.
+          Push-Location dist
+          Get-FileHash osfm-server.exe, osfm-client.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $($_.Path | Split-Path -Leaf)" } |
+            Set-Content SHA256SUMS.txt
+          Pop-Location
+          Get-ChildItem dist/osfm-*.exe, dist/SHA256SUMS.txt | Format-Table Name, Length
+
+      - name: Upload build artifacts (PRs + debugging)
+        uses: actions/upload-artifact@v4
+        with:
+          name: osfm-winui-x64
+          path: |
+            dist/osfm-server.exe
+            dist/osfm-client.exe
+            dist/SHA256SUMS.txt
+          retention-days: 14
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            "tag=${{ github.ref_name }}" >> $env:GITHUB_OUTPUT
+          } elseif ('${{ inputs.release_tag }}' -ne '') {
+            "tag=${{ inputs.release_tag }}" >> $env:GITHUB_OUTPUT
+          } else {
+            "tag=winui-latest" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Publish to GitHub Release
+        # Compile-only on PRs and main-branch pushes; publish on tags + dispatch.
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: OSFM-Net WinUI3 (${{ steps.tag.outputs.tag }})
+          prerelease: ${{ steps.tag.outputs.tag == 'winui-latest' }}
+          generate_release_notes: true
+          files: |
+            dist/osfm-server.exe
+            dist/osfm-client.exe
+            dist/SHA256SUMS.txt
