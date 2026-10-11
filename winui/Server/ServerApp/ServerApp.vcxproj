@@ -8,6 +8,12 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1B2C3D4-2222-4000-8000-000000000002}</ProjectGuid>
+    <!-- Tells the CppWinRT targets this is a C++/WinRT XAML project (not
+         C++/CX): enables the component projection that emits winrt/ headers
+         AND sources/*.h stubs declaring implementation::App_base (else the
+         XAML .xaml.g.h has no base to derive from -> C2039). Template sets
+         this; hand-written projects must set it explicitly. -->
+    <CppWinRTProjectLanguage>C++/WinRT</CppWinRTProjectLanguage>
     <!-- RootNamespace feeds the XAML compiler: it generates
          XamlMetaDataProvider.idl with the matching namespace block.
          Without it the generated file has an empty namespace and
