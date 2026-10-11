@@ -84,10 +84,11 @@
     <ClCompile Include="TcpServer.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <!-- Only page/window IDLs: there is NO App.idl. The XAML compiler fully
-         defines AppT from the Application root in App.xaml; adding an
-         App.idl makes MIDL emit a conflicting App projection and App_base
-         never resolves (C2039). Matches the working sample tree. -->
+    <!-- App.idl + MainWindow.idl: every x:Class type is a runtime class
+         (MS Learn: types referenced by XAML UI must be runtime classes).
+         MIDL emits winrt/OSFM.*.h declaring App_base/MainWindow_base;
+         the XAML .g.h derives from it. -->
+    <Midl Include="App.idl"/>
     <Midl Include="MainWindow.idl"/>
     <Page Include="App.xaml"/>
     <Page Include="MainWindow.xaml"/>

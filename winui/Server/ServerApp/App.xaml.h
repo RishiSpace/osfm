@@ -1,6 +1,7 @@
 #pragma once
-// App.xaml.g.h (XAML compiler) fully defines AppT from the Application root
-// in App.xaml. No App.idl exists and no winrt/ projection is needed.
+// App_base comes from the MIDL projection (App.idl -> winrt/OSFM.ServerApp.h);
+// App.xaml.g.h (XAML compiler) derives AppT from it. Projection first.
+#include "winrt/OSFM.ServerApp.h"
 #include "App.xaml.g.h"
 #include <winrt/Microsoft.UI.Xaml.h>
 
