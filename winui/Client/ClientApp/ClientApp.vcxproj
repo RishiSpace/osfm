@@ -71,7 +71,7 @@
     <ClCompile Include="ClientEngine.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <Midl Include="App.idl"/>
+    <!-- Only page/window IDLs: no App.idl (see ServerApp.vcxproj note). -->
     <Midl Include="MainWindow.idl"/>
     <Page Include="App.xaml"/>
     <Page Include="MainWindow.xaml"/>
