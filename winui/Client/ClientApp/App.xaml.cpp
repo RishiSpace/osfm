@@ -2,8 +2,8 @@
 
 #include "pch.h"
 #include "App.xaml.h"
-// Generated Application glue; required (App.xaml.g.h declares App_base).
-#include "App.g.cpp"
+// App_base + XamlTypeInfo glue come from App.idl (cppwinrt) + App.xaml
+// codegen; do NOT include App.g.cpp (it only exists for IDL-less pages).
 #include "MainWindow.xaml.h"
 
 using namespace winrt;

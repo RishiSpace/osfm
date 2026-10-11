@@ -2,8 +2,9 @@
 
 #include "pch.h"
 #include "MainWindow.xaml.h"
-// Generated XAML code-behind glue (InitializeComponent + control accessors).
-#include "MainWindow.g.cpp"
+// InitializeComponent + control accessors come from MainWindow.xaml codegen
+// via MainWindow.xaml.h's MainWindow.g.h include (backed by MainWindow.idl).
+// Do NOT include MainWindow.g.cpp (it only exists for IDL-less pages).
 
 #include "ClientEngine.h"
 #include "Logger.h"
