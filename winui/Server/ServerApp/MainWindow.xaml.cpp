@@ -6,9 +6,10 @@
 
 #include "pch.h"
 #include "MainWindow.xaml.h"
-// InitializeComponent + control accessors come from MainWindow.xaml codegen
-// via MainWindow.xaml.h's MainWindow.g.h include (backed by MainWindow.idl).
-// Do NOT include MainWindow.g.cpp (it only exists for IDL-less pages).
+// Template-verbatim: guarded generated TU (emitted for IDL-backed pages).
+#if __has_include("MainWindow.g.cpp")
+#include "MainWindow.g.cpp"
+#endif
 
 #include "Logger.h"
 #include "NetUtils.h"

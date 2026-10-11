@@ -15,3 +15,10 @@ private:
     std::unique_ptr<osfm::client::ClientEngine> engine_;
 };
 } // namespace winrt::OSFM::ClientApp::implementation
+
+// Activation factory: required by the XAML compiler even for same-project
+// activation (matches the VS Blank App template verbatim).
+namespace winrt::OSFM::ClientApp::factory_implementation {
+struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow> {
+};
+} // namespace winrt::OSFM::ClientApp::factory_implementation
