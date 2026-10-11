@@ -11,6 +11,8 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
 
+#include <cstring> // strlen
+#include <string>
 #include <vector>
 
 namespace osfm::net {
@@ -43,16 +45,18 @@ std::string GetHostname() {
 std::wstring ToWide(const std::string& s) {
     if (s.empty()) return {};
     int n = ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
-    std::wstring w(static_cast<size_t>(n > 0 ? n - 1 : 0), L'\0');
-    if (n > 0) ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, w.data(), n);
+    if (n <= 0) return {};
+    std::wstring w(static_cast<size_t>(n - 1), L'\0');
+    ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, &w[0], n);
     return w;
 }
 
 std::string ToNarrow(const std::wstring& ws) {
     if (ws.empty()) return {};
     int n = ::WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    std::string s(static_cast<size_t>(n > 0 ? n - 1 : 0), '\0');
-    if (n > 0) ::WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, s.data(), n, nullptr, nullptr);
+    if (n <= 0) return {};
+    std::string s(static_cast<size_t>(n - 1), '\0');
+    ::WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, &s[0], n, nullptr, nullptr);
     return s;
 }
 

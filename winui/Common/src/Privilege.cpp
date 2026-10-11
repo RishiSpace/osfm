@@ -12,6 +12,9 @@
 #pragma comment(lib, "Netapi32.lib")
 #pragma comment(lib, "Shell32.lib")
 
+#include <cstdlib> // free (_wdupenv_s)
+#include <string>
+
 namespace osfm::priv {
 
 bool IsElevated() {
@@ -37,7 +40,7 @@ bool EnsureSmbShare(const std::wstring& shareName, const std::wstring& path) {
     si.shi502_type = STYPE_DISKTREE;
     si.shi502_remark = L"OSFM software staging";
     si.shi502_permissions = ACCESS_ALL;
-    si.shi502_max_uses = -1;
+    si.shi502_max_uses = static_cast<DWORD>(-1);
     si.shi502_path = const_cast<LPWSTR>(path.c_str());
     si.shi502_passwd = nullptr;
     DWORD err = 0;
@@ -71,7 +74,7 @@ bool EnableRdp(std::wstring* log) {
         L"Enable-NetFirewallRule -DisplayGroup 'Remote Desktop'; "
         L"Restart-Service -Name 'TermService' -Force";
     auto r = proc::RunPowerShell(ps, 120000);
-    if (log) *log = net::ToNarrow(r.out + r.err);
+    if (log) *log = r.out + r.err; // narrow output: log directly, no ToNarrow
     return r.exitCode == 0;
 }
 

@@ -3,6 +3,7 @@
 // Replaces win10toast / plyer usage in the Python build.
 
 #include <string>
+#include <vector>
 
 namespace osfm::toast {
 

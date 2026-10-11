@@ -12,6 +12,9 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
 
+#include <cstring> // strlen
+#include <string>
+
 namespace osfm::server {
 
 TcpServer::TcpServer(unsigned short port, std::string serverHostname, Callbacks cb)

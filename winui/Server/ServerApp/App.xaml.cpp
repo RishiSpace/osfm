@@ -24,3 +24,11 @@ void App::OnLaunched(LaunchActivatedEventArgs const&) {
 }
 
 } // namespace winrt::OSFM::ServerApp::implementation
+
+// Unpackaged WinAppSDK entry point: Application::Start calls OnLaunched.
+int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
+    winrt::init_apartment(winrt::apartment_type::single_threaded);
+    ::winrt::Microsoft::UI::Xaml::Application::Start(
+        [](auto&&) { ::winrt::make<::winrt::OSFM::ServerApp::implementation::App>(); });
+    return 0;
+}

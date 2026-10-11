@@ -10,7 +10,7 @@
 
 #include <cwctype>
 #include <filesystem>
-#include <vector>
+#include <string>
 
 namespace osfm::proc {
 
@@ -32,7 +32,7 @@ Result RunCapture(const std::wstring& commandLine, unsigned long timeoutMs) {
     ::SetHandleInformation(ro, HANDLE_FLAG_INHERIT, 0);
     ::SetHandleInformation(re, HANDLE_FLAG_INHERIT, 0);
 
-    STARTUPW si{};
+    STARTUPINFOW si{};
     si.cb = sizeof(si);
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
@@ -60,7 +60,7 @@ Result RunCapture(const std::wstring& commandLine, unsigned long timeoutMs) {
 }
 
 bool StartDetached(const std::wstring& commandLine) {
-    STARTUPW si{};
+    STARTUPINFOW si{};
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi{};
     std::wstring cmd = commandLine;
