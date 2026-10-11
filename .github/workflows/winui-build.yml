@@ -95,6 +95,19 @@ jobs:
             Write-Host "===== $app : sources/App.h (cppwinrt impl stub) ====="
             $stub = Join-Path $gen 'sources\App.h'
             if (Test-Path $stub) { Get-Content $stub } else { Write-Host "MISSING: $stub" }
+            Write-Host "===== $app : App.g.h FULL (declares App_base?) ====="
+            $agh = Join-Path $gen 'App.g.h'
+            if (Test-Path $agh) { Get-Content $agh } else { Write-Host "MISSING: $agh" }
+            Write-Host "===== $app : XamlTypeInfo.g.cpp head (includes) ====="
+            $xti = Join-Path $gen 'XamlTypeInfo.g.cpp'
+            if (Test-Path $xti) { Get-Content $xti -TotalCount 60 } else { Write-Host "MISSING: $xti" }
+            Write-Host "===== $app : XamlTypeInfo.g.cpp failing region ====="
+            if (Test-Path $xti) {
+              $lines = Get-Content $xti
+              $lo = [Math]::Max(0, 240 - 1); $hi = [Math]::Min($lines.Count - 1, 300 - 1)
+              if ($lines.Count -lt 240) { $lo = 0; $hi = $lines.Count - 1 }
+              for ($i = $lo; $i -le $hi; $i++) { '{0,5}: {1}' -f ($i + 1), $lines[$i] }
+            }
             Write-Host "===== $app : winrt projection headers listing ====="
             $w = Join-Path $gen 'winrt'
             if (Test-Path $w) { Get-ChildItem $w -File | Select-Object Name, Length | Format-Table -AutoSize }
