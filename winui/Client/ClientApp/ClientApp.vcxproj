@@ -10,10 +10,15 @@
     <ProjectGuid>{A1B2C3D4-3333-4000-8000-000000000003}</ProjectGuid>
     <!-- See ServerApp.vcxproj: RootNamespace drives XamlMetaDataProvider.idl. -->
     <RootNamespace>OSFM.ClientApp</RootNamespace>
-    <!-- Plain Win32 Desktop app (NOT UWP): see ServerApp.vcxproj note. -->
-    <AppxPackage>false</AppxPackage>
-    <WindowsPackageType>None</WindowsPackageType>
+    <!-- See ServerApp.vcxproj: template-faithful WinUI 3 unpackaged app. -->
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <UseWinUI>true</UseWinUI>
+    <AppxPackage>false</AppxPackage>
+    <AppContainerApplication>false</AppContainerApplication>
+    <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <Platforms>x64</Platforms>
   </PropertyGroup>
@@ -36,8 +41,6 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <!-- See OsfmCore.vcxproj: force the standard flag explicitly. -->
-      <AdditionalOptions>/std:c++20 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>OsfmCore.lib;Ws2_32.lib;Netapi32.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -62,7 +65,10 @@
     </ClCompile>
     <ClCompile Include="App.xaml.cpp"/>
     <ClCompile Include="MainWindow.xaml.cpp"/>
-    <ClCompile Include="ClientEngine.cpp"/>
+    <!-- Engine TU skips the app PCH (no pch.h include; else C1010). -->
+    <ClCompile Include="ClientEngine.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <Midl Include="MainWindow.idl"/>
     <Page Include="App.xaml"/>
     <Page Include="MainWindow.xaml"/>
