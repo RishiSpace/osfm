@@ -14,3 +14,8 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+// App + MainWindow implementation headers: XamlTypeInfo.g.cpp references
+// implementation::App/MainWindow, so the implementation types must be
+// complete wherever that TU compiles (its own static_assert says so).
+#include "App.xaml.h"
+#include "MainWindow.xaml.h"
