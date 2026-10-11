@@ -43,8 +43,3 @@ private:
 };
 
 } // namespace winrt::OSFM::ServerApp::implementation
-
-namespace winrt::OSFM::ServerApp::factory_implementation {
-struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow> {
-};
-} // namespace winrt::OSFM::ServerApp::factory_implementation

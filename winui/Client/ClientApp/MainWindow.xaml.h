@@ -15,8 +15,3 @@ private:
     std::unique_ptr<osfm::client::ClientEngine> engine_;
 };
 } // namespace winrt::OSFM::ClientApp::implementation
-
-namespace winrt::OSFM::ClientApp::factory_implementation {
-struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow> {
-};
-} // namespace winrt::OSFM::ClientApp::factory_implementation
