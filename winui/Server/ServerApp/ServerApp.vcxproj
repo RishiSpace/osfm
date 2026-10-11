@@ -8,10 +8,11 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1B2C3D4-2222-4000-8000-000000000002}</ProjectGuid>
+    <!-- Plain Win32 Desktop app (NOT UWP): windows-latest runners only carry
+         the Desktop C++ toolset. WinUI 3/WinAppSDK arrives via PackageReference.
+         ApplicationType=Windows Store would demand the UWP toolset (MSB8020). -->
     <AppxPackage>false</AppxPackage>
     <WindowsPackageType>None</WindowsPackageType>
-    <ApplicationType>Windows Store</ApplicationType>
-    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <Platforms>x64</Platforms>
