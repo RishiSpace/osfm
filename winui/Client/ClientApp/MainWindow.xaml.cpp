@@ -2,12 +2,10 @@
 
 #include "pch.h"
 #include "MainWindow.xaml.h"
-#if __has_include("MainWindow.g.cpp")
+// Generated XAML code-behind glue (InitializeComponent + control accessors).
 #include "MainWindow.g.cpp"
-#endif
 
 #include "ClientEngine.h"
-#include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include "Logger.h"
 #include "NetUtils.h"
 #include "OsfmProtocol.h"

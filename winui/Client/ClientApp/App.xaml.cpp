@@ -2,9 +2,8 @@
 
 #include "pch.h"
 #include "App.xaml.h"
-#if __has_include("App.g.cpp")
+// Generated Application glue; required (App.xaml.g.h declares App_base).
 #include "App.g.cpp"
-#endif
 #include "MainWindow.xaml.h"
 
 using namespace winrt;
