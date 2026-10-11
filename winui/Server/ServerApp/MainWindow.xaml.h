@@ -43,3 +43,10 @@ private:
 };
 
 } // namespace winrt::OSFM::ServerApp::implementation
+
+// Activation factory: required by the XAML compiler even for same-project
+// activation (matches the VS Blank App template verbatim).
+namespace winrt::OSFM::ServerApp::factory_implementation {
+struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow> {
+};
+} // namespace winrt::OSFM::ServerApp::factory_implementation
