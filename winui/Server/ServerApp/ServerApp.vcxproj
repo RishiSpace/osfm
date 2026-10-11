@@ -84,6 +84,7 @@
     <ClCompile Include="TcpServer.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <Midl Include="App.idl"/>
     <Midl Include="MainWindow.idl"/>
     <Page Include="App.xaml"/>
     <Page Include="MainWindow.xaml"/>
