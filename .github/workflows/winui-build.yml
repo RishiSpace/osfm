@@ -61,6 +61,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet (PackageReference)
+        # C++ PackageReference restore via MSBuild (no nuget.exe/packages.config needed)
         run: msbuild $env:SOLUTION /t:Restore /p:Configuration=$env:CONFIG /p:Platform=$env:PLATFORM /v:minimal
 
       - name: Build solution (Release|x64)
