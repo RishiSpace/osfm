@@ -1,4 +1,9 @@
 // Toast.cpp — WinRT toast notifications (replaces win10toast/plyer).
+// NOTE: OsfmCore has NO CppWinRT PackageReference of its own. This TU
+// includes <winrt/...> projection headers resolved from the consuming app's
+// restored packages, so it MUST see the same CppWinRT version as the apps
+// (else LNK2038 C++/WinRT version mismatch at link). Keep the solution on a
+// single CppWinRT version; bump ServerApp/ClientApp together.
 
 #include "Toast.h"
 #include "NetUtils.h"

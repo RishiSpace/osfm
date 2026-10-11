@@ -6,8 +6,7 @@
 #include "MainWindow.xaml.g.h"
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <memory>
-
-namespace osfm::client { class ClientEngine; }
+#include "ClientEngine.h"
 
 namespace winrt::OSFM::ClientApp::implementation {
 struct MainWindow : MainWindowT<MainWindow> {

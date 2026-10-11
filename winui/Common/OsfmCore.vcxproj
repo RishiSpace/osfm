@@ -51,4 +51,10 @@
     <ClCompile Include="src\Logger.cpp"/>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ItemGroup Label="NuGet Packages">
+    <!-- Same CppWinRT version as the apps: Toast.cpp includes
+         <winrt/...> headers, and LNK2038 fires if the lib and the apps
+         resolve different projection versions. Bump all three together. -->
+    <PackageReference Include="Microsoft.Windows.CppWinRT" Version="2.0.240405001"/>
+  </ItemGroup>
 </Project>
